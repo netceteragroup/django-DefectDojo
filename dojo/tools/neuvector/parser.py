@@ -9,6 +9,10 @@ from dojo.models import Finding
 
 logger = logging.getLogger(__name__)
 
+NEUVECTOR_SCAN_NAME = 'NeuVector (REST)'
+NEUVECTOR_IMAGE_SCAN_ENGAGEMENT_NAME = 'NV image scan'
+NEUVECTOR_CONTAINER_SCAN_ENGAGEMENT_NAME = 'NV container scan'
+
 
 class NeuVectorJsonParser(object):
     def parse(self, json_output, test):
@@ -99,10 +103,10 @@ def convert_severity(severity):
 class NeuVectorParser(object):
 
     def get_scan_types(self):
-        return ["NeuVector (REST)"]
+        return [NEUVECTOR_SCAN_NAME]
 
     def get_label_for_scan_types(self, scan_type):
-        return "NeuVector (REST)"
+        return NEUVECTOR_SCAN_NAME
 
     def get_description_for_scan_types(self, scan_type):
         return "JSON output of /v1/scan/{entity}/{id} endpoint."
