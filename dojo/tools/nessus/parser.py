@@ -75,6 +75,8 @@ class NessusCSVParser(object):
 
             detected_cve = self._format_cve(str(row.get('CVE')))
 
+            vuln_id_from_tool = row.get('Plugin')
+
             if dupe_key in dupes:
                 find = dupes[dupe_key]
                 if 'Plugin Output' in row:
@@ -88,7 +90,8 @@ class NessusCSVParser(object):
                                 severity=severity,
                                 mitigation=mitigation,
                                 impact=impact,
-                                references=references)
+                                references=references,
+                                vuln_id_from_tool=vuln_id_from_tool)
                 if detected_cve:
                     find.unsaved_vulnerability_ids = detected_cve
 
@@ -199,6 +202,8 @@ class NessusXMLParser(object):
                     title = item.attrib["pluginName"]
                     dupe_key = severity + title
 
+                    vuln_id_from_tool = item.attrib["pluginID"]
+
                     if dupe_key in dupes:
                         find = dupes[dupe_key]
                         if plugin_output is not None:
@@ -212,7 +217,8 @@ class NessusXMLParser(object):
                                        impact=impact,
                                        references=references,
                                        cwe=cwe,
-                                       cvssv3=cvssv3)
+                                       cvssv3=cvssv3,
+                                       vuln_id_from_tool=vuln_id_from_tool)
                         find.unsaved_vulnerability_ids = list()
                         find.unsaved_endpoints = list()
                         dupes[dupe_key] = find
