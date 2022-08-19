@@ -80,3 +80,4 @@ pycurl==7.45.1  # Required for Celery Broker AWS (SQS) support
 boto3==1.24.55  # Required for Celery Broker AWS (SQS) support
 python-ldap==3.4.2
 django-auth-ldap==4.1.0
+pyTenable>=1.4.6
