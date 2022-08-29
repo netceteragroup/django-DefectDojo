@@ -20,6 +20,8 @@ RUN \
     xmlsec1 \
     git \
     uuid-runtime \
+    libldap2-dev \
+    libsasl2-dev \
     && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists && \
@@ -58,6 +60,10 @@ RUN \
   true
 COPY --from=build /tmp/wheels /tmp/wheels
 COPY requirements.txt ./
+# fixes inability to connect to LDAPS servers
+RUN mkdir -p /etc/ldap
+RUN echo "TLS_CACERT /etc/ssl/certs/ca-certificates.crt" >> /etc/ldap/ldap.conf
+
 RUN pip3 install \
 	--no-cache-dir \
 	--no-index \

@@ -74,3 +74,5 @@ djangosaml2==1.5.1
 drf-spectacular==0.22.1
 django-ratelimit==3.0.1
 argon2-cffi==21.3.0
+python-ldap==3.4.2
+django-auth-ldap==4.1.0
