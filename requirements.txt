@@ -79,3 +79,5 @@ blackduck==1.0.7
 pycurl==7.45.1  # Required for Celery Broker AWS (SQS) support
 boto3==1.25.5  # Required for Celery Broker AWS (SQS) support
 netaddr==0.8.0
+python-ldap==3.4.2
+django-auth-ldap==4.1.0
