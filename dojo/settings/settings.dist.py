@@ -18,6 +18,9 @@ import environ
 from celery.schedules import crontab
 from netaddr import IPNetwork, IPSet
 
+import ldap
+from django_auth_ldap.config import LDAPSearch, PosixGroupType, ActiveDirectoryGroupType
+
 from dojo import __version__
 
 logger = logging.getLogger(__name__)
@@ -321,6 +324,26 @@ env = environ.FileAwareEnv(
     # For HTTP requests, how long connection is open before timeout
     # This settings apply only on requests performed by "requests" lib used in Dojo code (if some included lib is using "requests" as well, this does not apply there)
     DD_REQUESTS_TIMEOUT=(int, 30),
+    # LDAP
+    DD_LDAP_SERVER_URI=(str, "ldap://ldap.example.com"),
+    DD_LDAP_BIND_DN=(str, ""),
+    DD_LDAP_BIND_PASSWORD=(str, ""),
+    DD_LDAP_USER_SEARCH_BASE=(str, ""),
+    DD_LDAP_USER_SEARCH_FILTER=(str, "(uid=%(user)s)"),
+    DD_LDAP_USER_ATTR_USERNAME=(str, "uid"),
+    DD_LDAP_USER_ATTR_FNAME=(str, "cn"),
+    DD_LDAP_USER_ATTR_LNAME=(str, "sn"),
+    DD_LDAP_USER_ATTR_MAIL=(str, "mail"),
+    DD_LDAP_GROUP_SEARCH_BASE=(str, ""),
+    DD_LDAP_GROUP_SEARCH_FILTER=(str, "(objectClass=posixGroup)"),
+    DD_LDAP_GROUP_TYPE=(str, "POSIX"),
+    DD_LDAP_GROUP_ATTR_NAME=(str, "cn"),
+    DD_LDAP_GROUP_REQUIRE=(str, ""),
+    DD_LDAP_USER_FLAG_ACTIVE=(str, ""),
+    DD_LDAP_USER_FLAG_SUPERUSER=(str, ""),
+    DD_LDAP_FIND_GROUP_PERMS=(bool, False),
+    DD_LDAP_CACHE_TIMEOUT=(int, 3600),
+    DD_LDAP_MIRROR_GROUPS=(bool, False),
 )
 
 
@@ -392,6 +415,41 @@ DISABLE_ALERT_COUNTER = env("DD_DISABLE_ALERT_COUNTER")
 MAX_ALERTS_PER_USER = env("DD_MAX_ALERTS_PER_USER")
 
 TAG_PREFETCHING = env("DD_TAG_PREFETCHING")
+
+# ------------------------------------------------------------------------------
+# LDAP
+# ------------------------------------------------------------------------------
+AUTH_LDAP_SERVER_URI = env("DD_LDAP_SERVER_URI")
+AUTH_LDAP_BIND_DN = env("DD_LDAP_BIND_DN")
+AUTH_LDAP_BIND_PASSWORD = env("DD_LDAP_BIND_PASSWORD")
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    env("DD_LDAP_USER_SEARCH_BASE"), ldap.SCOPE_SUBTREE, env("DD_LDAP_USER_SEARCH_FILTER")
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "username": env("DD_LDAP_USER_ATTR_USERNAME"),
+    "first_name": env("DD_LDAP_USER_ATTR_FNAME"),
+    "last_name": env("DD_LDAP_USER_ATTR_LNAME"),
+    "email": env("DD_LDAP_USER_ATTR_MAIL"),
+}
+
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    env("DD_LDAP_GROUP_SEARCH_BASE"), ldap.SCOPE_SUBTREE, env("DD_LDAP_GROUP_SEARCH_FILTER")
+)
+AUTH_LDAP_GROUP_TYPE = PosixGroupType(name_attr=env("DD_LDAP_GROUP_ATTR_NAME")) if env("DD_LDAP_GROUP_TYPE") == "POSIX" else ActiveDirectoryGroupType(name_attr=env("DD_LDAP_GROUP_ATTR_NAME"))
+
+
+# Simple group restrictions
+AUTH_LDAP_REQUIRE_GROUP = env("DD_LDAP_GROUP_REQUIRE")
+
+AUTH_LDAP_USER_FLAGS_BY_GROUP = {
+    "is_active": env("DD_LDAP_USER_FLAG_ACTIVE"),
+    "is_superuser": env("DD_LDAP_USER_FLAG_SUPERUSER"),
+}
+
+AUTH_LDAP_FIND_GROUP_PERMS = env("DD_LDAP_FIND_GROUP_PERMS")
+AUTH_LDAP_CACHE_TIMEOUT = env("DD_LDAP_CACHE_TIMEOUT")
+AUTH_LDAP_MIRROR_GROUPS = env("DD_LDAP_MIRROR_GROUPS")
 
 # ------------------------------------------------------------------------------
 # DATABASE
@@ -501,6 +559,7 @@ LOGIN_URL = env("DD_LOGIN_URL")
 
 # These are the individidual modules supported by social-auth
 AUTHENTICATION_BACKENDS = (
+    "django_auth_ldap.backend.LDAPBackend",
     "social_core.backends.open_id_connect.OpenIdConnectAuth",
     "social_core.backends.auth0.Auth0OAuth2",
     "social_core.backends.google.GoogleOAuth2",
@@ -1730,6 +1789,11 @@ LOGGING = {
         },
         "titlecase": {
             # The titlecase library is too verbose in it's logging, reducing the verbosity in our logs.
+            "handlers": [rf"{LOGGING_HANDLER}"],
+            "level": str(LOG_LEVEL),
+            "propagate": False,
+        },
+        "django_auth_ldap": {
             "handlers": [rf"{LOGGING_HANDLER}"],
             "level": str(LOG_LEVEL),
             "propagate": False,
