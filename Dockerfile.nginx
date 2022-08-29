@@ -17,6 +17,8 @@ RUN \
     default-mysql-client \
     libmariadb-dev-compat \
     postgresql-client \
+    libldap2-dev \
+    libsasl2-dev \
     xmlsec1 \
     git \
     uuid-runtime \
