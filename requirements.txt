@@ -76,3 +76,5 @@ fontawesomefree==6.6.0
 PyYAML==6.0.2
 pyopenssl==25.1.0
 parameterized==0.9.0
+python-ldap==3.4.3
+django-auth-ldap==4.6.0
