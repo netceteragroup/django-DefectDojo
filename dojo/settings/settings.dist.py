@@ -239,6 +239,7 @@ env = environ.Env(
     DD_LDAP_BIND_PASSWORD=(str, ''),
     DD_LDAP_USER_SEARCH_BASE=(str, ''),
     DD_LDAP_USER_SEARCH_FILTER=(str, '(uid=%(user)s)'),
+    DD_LDAP_USER_ATTR_USERNAME=(str, 'uid'),
     DD_LDAP_USER_ATTR_FNAME=(str, 'cn'),
     DD_LDAP_USER_ATTR_LNAME=(str, 'sn'),
     DD_LDAP_USER_ATTR_MAIL=(str, 'mail'),
@@ -339,6 +340,7 @@ AUTH_LDAP_USER_SEARCH = LDAPSearch(
 )
 
 AUTH_LDAP_USER_ATTR_MAP = {
+    "username": env('DD_LDAP_USER_ATTR_USERNAME'),
     "first_name": env('DD_LDAP_USER_ATTR_FNAME'),
     "last_name": env('DD_LDAP_USER_ATTR_LNAME'),
     "email": env('DD_LDAP_USER_ATTR_MAIL'),
