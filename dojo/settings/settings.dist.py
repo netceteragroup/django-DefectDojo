@@ -1431,6 +1431,11 @@ LOGGING = {
             'level': '%s' % LOG_LEVEL,
             'propagate': False,
         },
+        'django_auth_ldap': {
+            'handlers': [r'%s' % LOGGING_HANDLER],
+            'level': '%s' % LOG_LEVEL,
+            'propagate': False,
+        },
     }
 }
 
