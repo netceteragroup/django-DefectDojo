@@ -82,6 +82,13 @@ spec:
         {{- . | toYaml | nindent 6 }}
       {{- end }}
       {{- if coalesce .Values.dbMigrationChecker.enabled .Values.cloudsql.enabled .Values.celery.beat.extraInitContainers }}
+      {{- if .Values.postgresql.tls.enabled }}
+      - name: postgresql-tls-volume
+        secret:
+          secretName: {{ .Values.postgresql.tls.secretName }}
+          # we need it permissive to access as low-privileged user
+          defaultMode: 0644
+      {{- end }}
       initContainers:
       {{- range .Values.celery.beat.extraInitContainers }}
       - {{- . | toYaml | nindent 8 }}
@@ -97,7 +104,14 @@ spec:
       {{- end }}
       containers:
       - command:
-        - /entrypoint-celery-beat.sh
+        - /bin/sh
+        - -cx
+        - |
+          {{- if .Values.postgresql.tls.enabled }}
+          cp -a /run/defectdojo/{{ .Values.postgresql.tls.secretName }}/..data/* /run/defectdojo/
+          chmod 600 /run/defectdojo/{{ .Values.postgresql.tls.clientKey }}
+          {{- end }}
+          /entrypoint-celery-beat.sh
         name: celery
         image: "{{ template "celery.beat.image" . }}"
         imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -133,6 +147,10 @@ spec:
         {{- end }}
         {{- with .Values.celery.beat.extraVolumeMounts }}
           {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        {{- if .Values.postgresql.tls.enabled }}
+        - name: postgresql-tls-volume
+          mountPath: /run/defectdojo/{{ .Values.postgresql.tls.secretName }}
         {{- end }}
         envFrom:
         - configMapRef:
