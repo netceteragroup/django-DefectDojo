@@ -66,6 +66,13 @@ spec:
           path: {{ .hostPath }}
           {{- end }}
       {{- end }}
+      {{- if .Values.postgresql.tls.enabled }}
+      - name: postgresql-tls-volume
+        secret:
+          secretName: {{ .Values.postgresql.tls.secretName }}
+          # we need it permissive to access as low-privileged user
+          defaultMode: 0644
+      {{- end }}
       {{- if .Values.dbMigrationChecker.enabled }}
       initContainers:
       {{$data := dict "fullName" $fullName }}
