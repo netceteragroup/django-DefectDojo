@@ -81,6 +81,13 @@ spec:
       {{- with .Values.celery.worker.extraVolumes }}
         {{- . | toYaml | nindent 6 }}
       {{- end }}
+      {{- if .Values.postgresql.tls.enabled }}
+      - name: postgresql-tls-volume
+        secret:
+          secretName: {{ .Values.postgresql.tls.secretName }}
+          # we need it permissive to access as low-privileged user
+          defaultMode: 0644
+      {{- end }}
       {{- if coalesce .Values.dbMigrationChecker.enabled .Values.cloudsql.enabled .Values.celery.worker.extraInitContainers }}
       initContainers:
       {{- range .Values.celery.worker.extraInitContainers }}
@@ -116,7 +123,15 @@ spec:
             "celery.worker.containerSecurityContext"
           ) | nindent 10 }}
         {{- end }}
-        command: ['/entrypoint-celery-worker.sh']
+        command:
+          - /bin/sh
+          - -cx
+          - |
+            {{- if .Values.postgresql.tls.enabled }}
+            cp -a /run/defectdojo/{{ .Values.postgresql.tls.secretName }}/..data/* /run/defectdojo/
+            chmod 600 /run/defectdojo/{{ .Values.postgresql.tls.clientKey }}
+            {{- end }}
+            /entrypoint-celery-worker.sh
         volumeMounts:
         {{- if .Values.localsettingspy }}
         - name: localsettingspy
@@ -130,6 +145,13 @@ spec:
         {{- end }}
         {{- with .Values.celery.worker.extraVolumeMounts }}
           {{- . | toYaml | nindent 8 }}
+        {{- end }}
+        {{- if .Values.postgresql.tls.enabled }}
+        - name: run
+          # here we store client TLS certificates
+          mountPath: /run/defectdojo
+        - name: postgresql-tls-volume
+          mountPath: /run/defectdojo/{{ .Values.postgresql.tls.secretName }}
         {{- end }}
         envFrom:
         - configMapRef:
