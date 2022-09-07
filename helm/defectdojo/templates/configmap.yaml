@@ -44,6 +44,12 @@ data:
   DD_DATABASE_PORT: '{{ .Values.postgresql.primary.service.ports.postgresql }}'
   DD_DATABASE_USER: {{ .Values.postgresql.auth.username }}
   DD_DATABASE_NAME: {{ .Values.postgresql.auth.database }}
+  {{- if .Values.postgresql.tls.enabled }}
+  # /run/defectdojo is hardcoded here due to
+  # https://github.com/kubernetes/kubernetes/issues/57923 as we have to have
+  # writable directory in order to change permissions for clientKey file
+  DD_DATABASE_OPTIONS: 'sslmode=require,sslcert=/run/defectdojo/{{ .Values.postgresql.tls.clientCert }},sslkey=/run/defectdojo/{{ .Values.postgresql.tls.clientKey }},sslrootcert=/run/defectdojo/{{ .Values.postgresql.tls.caCert }}'
+  {{- end }}
   DD_INITIALIZE: '{{ .Values.initializer.run }}'
   DD_UWSGI_ENDPOINT: /run/defectdojo/uwsgi.sock
   DD_UWSGI_HOST: localhost
