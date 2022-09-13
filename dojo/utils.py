@@ -26,8 +26,8 @@ from django.db.models.query import QuerySet
 import calendar as tcalendar
 from dojo.github import add_external_issue_github, update_external_issue_github, close_external_issue_github, reopen_external_issue_github
 from dojo.models import Finding, Engagement, Finding_Group, Finding_Template, Product, \
-    Test, User, Dojo_User, System_Settings, Notifications, Endpoint, Benchmark_Type, \
-    Language_Type, Languages, Rule, Dojo_Group_Member, NOTIFICATION_CHOICES
+    Dojo_User, Test, User, System_Settings, Notifications, Endpoint, Benchmark_Type, \
+    Language_Type, Languages, Rule, Dojo_Group_Member, Dojo_Group, NOTIFICATION_CHOICES
 from asteval import Interpreter
 from dojo.notifications.helper import create_notification
 import logging
@@ -1738,6 +1738,56 @@ def user_post_save(sender, instance, created, **kwargs):
         if instance.is_superuser and not instance.is_staff:
             instance.is_staff = True
             instance.save()
+
+
+# called when underlying authentication backend alters a User, we handle only
+# the case when user is NOT created. the purpose of this slot is to update Dojo
+# native user group membership from membership managed by underlying
+# authentication backend.
+@receiver(post_save, sender=User)
+def user_post_save_auth_backend(sender, instance, created, **kwargs):
+    if not created:
+        # do not do anything if the user does not belong to any groups
+        backend_groups = instance.groups.all()
+        if backend_groups.count() == 0:
+            return
+        # refreshing user's group membership: keeping only those Dojo groups
+        # which correspond to internal groups. as Dojo_Group and Group are
+        # different classes we can't easily compare lists. thus, the code below
+        # is quite ugly.
+        dojo_user = Dojo_User.objects.get(username=instance.username)
+        existing_membership = Dojo_Group_Member.objects.filter(user=dojo_user)
+        for em in existing_membership:
+            delete_membership = True
+            for bg in backend_groups:
+                if em.group.name == bg.name:
+                    delete_membership = False
+                    break
+            if delete_membership:
+                em.delete()
+
+        updated_membership = Dojo_Group_Member.objects.filter(user=dojo_user)
+
+        # need this to set default role
+        system_settings = System_Settings.objects.get()
+        for bg in backend_groups:
+            add_membership = True
+            for um in updated_membership:
+                if um.group.name == bg.name:
+                    add_membership = False
+                    break
+
+            if not add_membership:
+                continue
+
+            dojo_group = Dojo_Group.objects.get(name=bg.name)
+            gm = None
+            if system_settings.default_group_role:
+                gm = Dojo_Group_Member(group=dojo_group, user=dojo_user,
+                                       role=system_settings.default_group_role)
+            else:
+                gm = Dojo_Group_Member(group=dojo_group, user=dojo_user)
+            gm.save()
 
 
 @receiver(post_save, sender=Engagement)
