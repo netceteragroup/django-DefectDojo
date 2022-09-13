@@ -44,6 +44,7 @@ from dojo.github import (
 from dojo.models import (
     NOTIFICATION_CHOICES,
     Benchmark_Type,
+    Dojo_Group,
     Dojo_Group_Member,
     Dojo_User,
     Endpoint,
@@ -1760,6 +1761,63 @@ def user_post_save(sender, instance, created, **kwargs):
     if instance.is_superuser and not instance.is_staff:
         instance.is_staff = True
         instance.save()
+
+
+# called when underlying authentication backend alters a User, we handle only
+# the case when user is NOT created. the purpose of this slot is to update Dojo
+# native user group membership from membership managed by underlying
+# authentication backend.
+@receiver(post_save, sender=User)
+def user_post_save_auth_backend(sender, instance, created, **kwargs):
+    if not created:
+        # do not do anything if the user does not belong to any groups
+        backend_groups = instance.groups.all()
+        if backend_groups.count() == 0:
+            return
+        # refreshing user's group membership: keeping only those Dojo groups
+        # which correspond to internal groups. as Dojo_Group and Group are
+        # different classes we can't easily compare lists. thus, the code below
+        # is quite ugly.
+        dojo_user = Dojo_User.objects.get(username=instance.username)
+        existing_membership = Dojo_Group_Member.objects.filter(user=dojo_user)
+        for em in existing_membership:
+            delete_membership = True
+            for bg in backend_groups:
+                if em.group.name == bg.name:
+                    delete_membership = False
+                    break
+            if delete_membership:
+                em.delete()
+
+        updated_membership = Dojo_Group_Member.objects.filter(user=dojo_user)
+
+        # need this to set default role
+        system_settings = System_Settings.objects.get()
+        for bg in backend_groups:
+            add_membership = True
+            for um in updated_membership:
+                if um.group.name == bg.name:
+                    add_membership = False
+                    break
+
+            if not add_membership:
+                continue
+
+            # if Dojo group that corresponds to backend authentication group
+            # does not exist yet, it is an issue, but we have to escape from it
+            # in a safe way, so we just do not add user to the group without
+            # throwing 500 error.
+            try:
+                dojo_group = Dojo_Group.objects.get(name=bg.name)
+                gm = None
+                if system_settings.default_group_role:
+                    gm = Dojo_Group_Member(group=dojo_group, user=dojo_user,
+                                           role=system_settings.default_group_role)
+                else:
+                    gm = Dojo_Group_Member(group=dojo_group, user=dojo_user)
+                gm.save()
+            except:
+                pass
 
 
 def is_safe_url(url):
