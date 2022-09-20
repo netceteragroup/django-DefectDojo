@@ -1780,14 +1780,21 @@ def user_post_save_auth_backend(sender, instance, created, **kwargs):
             if not add_membership:
                 continue
 
-            dojo_group = Dojo_Group.objects.get(name=bg.name)
-            gm = None
-            if system_settings.default_group_role:
-                gm = Dojo_Group_Member(group=dojo_group, user=dojo_user,
-                                       role=system_settings.default_group_role)
-            else:
-                gm = Dojo_Group_Member(group=dojo_group, user=dojo_user)
-            gm.save()
+            # if Dojo group that corresponds to backend authentication group
+            # does not exist yet, it is an issue, but we have to escape from it
+            # in a safe way, so we just do not add user to the group without
+            # throwing 500 error.
+            try:
+                dojo_group = Dojo_Group.objects.get(name=bg.name)
+                gm = None
+                if system_settings.default_group_role:
+                    gm = Dojo_Group_Member(group=dojo_group, user=dojo_user,
+                                           role=system_settings.default_group_role)
+                else:
+                    gm = Dojo_Group_Member(group=dojo_group, user=dojo_user)
+                gm.save()
+            except:
+                pass
 
 
 @receiver(post_save, sender=Engagement)
