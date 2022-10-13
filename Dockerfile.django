@@ -72,8 +72,8 @@ RUN \
 COPY --from=build /tmp/wheels /tmp/wheels
 COPY requirements.txt ./
 # fixes inability to connect to LDAPS servers
-RUN mkdir -p /etc/ldap
-RUN echo "TLS_CACERT /etc/ssl/certs/ca-certificates.crt" >> /etc/ldap/ldap.conf
+RUN mkdir -p /etc/ldap && \
+    echo "TLS_CACERT /etc/ssl/certs/ca-certificates.crt" >> /etc/ldap/ldap.conf
 
 RUN export PYCURL_SSL_LIBRARY=openssl && \
     pip3 install \
