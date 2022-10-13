@@ -14,8 +14,8 @@ RUN \
     gcc \
     build-essential \
     dnsutils \
-    default-mysql-client \
-    libmariadb-dev-compat \
+    # default-mysql-client \
+    # libmariadb-dev-compat \
     postgresql-client \
     xmlsec1 \
     git \
@@ -49,8 +49,8 @@ RUN \
     libjpeg62 \
     libtiff5 \
     dnsutils \
-    default-mysql-client \
-    libmariadb3 \
+    # default-mysql-client \
+    # libmariadb3 \
     xmlsec1 \
     git \
     uuid-runtime \

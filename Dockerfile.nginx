@@ -14,8 +14,8 @@ RUN \
     gcc \
     build-essential \
     dnsutils \
-    default-mysql-client \
-    libmariadb-dev-compat \
+    # default-mysql-client \
+    # libmariadb-dev-compat \
     postgresql-client \
     libldap2-dev \
     libsasl2-dev \
