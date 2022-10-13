@@ -22,6 +22,8 @@ RUN \
     uuid-runtime \
     # libcurl4-openssl-dev is required for installing pycurl python package
     libcurl4-openssl-dev \
+    # apparently, libssl-dev is also needed
+    libssl-dev \
     && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists && \
@@ -48,15 +50,19 @@ RUN \
     libopenjp2-7 \
     libjpeg62 \
     libtiff6 \
-    dnsutils \
+    # dnsutils \
     xmlsec1 \
+    # required by gitpython module
     git \
+    # required for the first-time initializer
     uuid-runtime \
-    libpq-dev \
+    # libpq-dev \
     # only required for the dbshell (used by the initializer job)
     postgresql-client \
     # libcurl4-openssl-dev is required for installing pycurl python package
     libcurl4-openssl-dev \
+    # apparently, libssl-dev is also needed
+    libssl-dev \
     && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists && \
