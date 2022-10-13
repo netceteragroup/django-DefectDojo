@@ -74,7 +74,9 @@ RUN \
 	--no-cache-dir \
 	--no-index \
   --find-links=/tmp/wheels \
-  -r ./requirements.txt
+  -r ./requirements.txt && \
+  # remove tests installed by python modules
+  rm -rf /usr/local/lib/python*/site-packages/*/tests /usr/local/lib/python*/site-packages/slapdtest/certs
 
 COPY \
   docker/entrypoint-celery-beat.sh \
