@@ -60,4 +60,4 @@ jobs:
           cp -f ./build/index.yaml ./index.yaml
           git add ./index.yaml
           git commit -m "Update index.yaml"
-          git push -u origin helm-charts
+          git push -u origin "${{ env.NCA_HELM_BRANCH }}"
