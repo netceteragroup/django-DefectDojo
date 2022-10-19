@@ -1,0 +1,58 @@
+name: "package Helm chart in Netcetera branch"
+
+env:
+  # update when moving workflow to another branch
+  NCA_BRANCH: "tag-2.15.0-NCA"
+  NCA_RELEASE_TO_UPLOAD_ASSET: "2.15.0"
+  NCA_HELM_BRANCH: "helm-charts-nca"
+on:
+  push:
+    branches:
+      - ${{ env.NCA_BRANCH }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.NCA_BRANCH }}
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.4.0
+      - name: Configure Helm repos
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm dependency list ./helm/defectdojo
+          helm dependency update ./helm/defectdojo
+      - name: Package Helm chart
+        id: package-helm-chart
+        run: |
+          mkdir build
+          helm package helm/defectdojo/ --destination ./build
+          echo "::set-output name=chart_version::$(ls build | sed 's|defectdojo-||' | sed 's|\.tgz||')"
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./build/defectdojo-${{ steps.package-helm-chart.outputs.chart_version }}.tgz
+          asset_name: defectdojo-${{ steps.package-helm-chart.outputs.chart_version }}.tgz
+          tag: ${{ env.NCA_RELEASE_TO_UPLOAD_ASSET }}
+          overwrite: true
+      - name: Update Helm repository index
+        id: update-helm-repository-index
+        run: |
+          git remote update
+          git fetch --all
+          git checkout "${{ env.NCA_HELM_BRANCH }}"
+          git pull
+          if [ ! -f ./index.yaml ]; then
+            helm repo index ./build --url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${{ github.event.inputs.release_number }}/"
+          else
+            helm repo index ./build --url "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${{ github.event.inputs.release_number }}/" --merge ./index.yaml
+          fi
+          cp -f ./build/index.yaml ./index.yaml
+          git add ./index.yaml
+          git commit -m "Update index.yaml"
+          git push -u origin helm-charts
