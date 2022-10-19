@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - ${{ env.NCA_BRANCH }}
+      - tag-2.15.0-NCA
 
 jobs:
   build:
