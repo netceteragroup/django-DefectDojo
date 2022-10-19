@@ -5,6 +5,8 @@ env:
   NCA_BRANCH: "tag-2.15.0-NCA"
   NCA_RELEASE_TO_UPLOAD_ASSET: "2.15.0"
   NCA_HELM_BRANCH: "helm-charts-nca"
+  GIT_USERNAME: "DefectDojo NCA release bot"
+  GIT_EMAIL: "dojo-nca-release-bot@users.noreply.github.com"
 on:
   workflow_dispatch:
   push:
@@ -44,6 +46,8 @@ jobs:
       - name: Update Helm repository index
         id: update-helm-repository-index
         run: |
+          git config --global user.name "${{ env.GIT_USERNAME }}"
+          git config --global user.email "${{ env.GIT_EMAIL }}"
           git remote update
           git fetch --all
           git checkout "${{ env.NCA_HELM_BRANCH }}"
