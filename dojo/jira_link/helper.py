@@ -989,7 +989,8 @@ def get_issuetype_fields(
                         issuetypeNames=issuetype_name,
                         expand="projects.issuetypes.fields")
             except JIRAError as e:
-                raise JIRAError(f"Jira API call 'createmeta' failed with status: {e.status_code} and message: {e.text}")
+                e.text = f"Jira API call 'createmeta' failed with status: {e.status_code} and message: {e.text}"
+                raise e
 
             project = None
             try:
@@ -1006,7 +1007,8 @@ def get_issuetype_fields(
             try:
                 issuetypes = jira.createmeta_issuetypes(project_key)
             except JIRAError as e:
-                raise JIRAError(f"Jira API call 'createmeta/issuetypes' failed with status: {e.status_code} and message: {e.text}. Project misconfigured or no permissions in Jira ?")
+                e.text = f"Jira API call 'createmeta/issuetypes' failed with status: {e.status_code} and message: {e.text}. Project misconfigured or no permissions in Jira ?"
+                raise e
 
             issuetype_id = None
             for it in issuetypes['values']:
@@ -1020,7 +1022,8 @@ def get_issuetype_fields(
             try:
                 issuetype_fields = jira.createmeta_fieldtypes(project_key, issuetype_id)
             except JIRAError as e:
-                raise JIRAError(f"Jira API call 'createmeta/fieldtypes' failed with status: {e.status_code} and message: {e.text}. Misconfigured project or default issue type ?")
+                e.text = f"Jira API call 'createmeta/fieldtypes' failed with status: {e.status_code} and message: {e.text}. Misconfigured project or default issue type ?"
+                raise e
 
             try:
                 issuetype_fields = [f['fieldId'] for f in issuetype_fields['values']]
@@ -1028,11 +1031,11 @@ def get_issuetype_fields(
                 raise JIRAError("Misconfigured default issue type ?")
 
     except JIRAError as e:
-        message = f"Failed retrieving field metadata from Jira version: {jira._version}, project: {project_key}, issue type: {issuetype_name}. {e.text}"
-        logger.warn(message)
-        add_error_message_to_response(message)
+        e.text = f"Failed retrieving field metadata from Jira version: {jira._version}, project: {project_key}, issue type: {issuetype_name}. {e.text}"
+        logger.warn(e.text)
+        add_error_message_to_response(e.text)
 
-        raise JIRAError(status_code=e.status_code, text=message)
+        raise e
 
     return issuetype_fields
 
