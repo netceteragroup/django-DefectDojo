@@ -637,14 +637,14 @@ def prepare_jira_issue_fields(
         issuetype_name,
         summary,
         description,
-        component_name = None,
-        custom_fields = None,
-        labels = None,
-        environment = None,
-        priority_name = None,
-        epic_name_field = None,
-        duedate = None,
-        issuetype_fields = []):
+        component_name=None,
+        custom_fields=None,
+        labels=None,
+        environment=None,
+        priority_name=None,
+        epic_name_field=None,
+        duedate=None,
+        issuetype_fields=[]):
 
     fields = {
             'project': {'key': project_key},
@@ -676,6 +676,7 @@ def prepare_jira_issue_fields(
 
     return fields
 
+
 def add_jira_issue(obj, *args, **kwargs):
     logger.info('trying to create a new jira issue for %d:%s', obj.id, to_str_typed(obj))
 
@@ -704,7 +705,7 @@ def add_jira_issue(obj, *args, **kwargs):
 
         labels = get_labels(obj) + get_tags(obj)
         if labels:
-            labels = list(dict.fromkeys(labels)) # de-dup
+            labels = list(dict.fromkeys(labels))  # de-dup
 
         duedate = None
         if System_Settings.objects.get().enable_finding_sla:
@@ -712,19 +713,18 @@ def add_jira_issue(obj, *args, **kwargs):
 
         issuetype_fields = get_issuetype_fields(jira, jira_project.project_key, jira_instance.default_issue_type)
         fields = prepare_jira_issue_fields(
-                project_key = jira_project.project_key,
-                issuetype_name = jira_instance.default_issue_type,
-                summary = jira_summary(obj),
-                description = jira_description(obj),
-                component_name = jira_project.component,
-                custom_fields = jira_project.custom_fields,
-                labels = labels,
-                environment = jira_environment(obj),
-                priority_name = jira_priority(obj),
-                epic_name_field = get_epic_name_field_name(jira_instance),
-                duedate = duedate,
-                issuetype_fields = issuetype_fields)
-
+            project_key=jira_project.project_key,
+            issuetype_name=jira_instance.default_issue_type,
+            summary=jira_summary(obj),
+            description=jira_description(obj),
+            component_name=jira_project.component,
+            custom_fields=jira_project.custom_fields,
+            labels=labels,
+            environment=jira_environment(obj),
+            priority_name=jira_priority(obj),
+            epic_name_field=get_epic_name_field_name(jira_instance),
+            duedate=duedate,
+            issuetype_fields=issuetype_fields)
 
         logger.debug('sending fields to JIRA: %s', fields)
         new_issue = jira.create_issue(fields)
@@ -826,19 +826,19 @@ def update_jira_issue(obj, *args, **kwargs):
 
         labels = get_labels(obj) + get_tags(obj)
         if labels:
-            labels = list(dict.fromkeys(labels)) # de-dup
+            labels = list(dict.fromkeys(labels))  # de-dup
 
         issuetype_fields = get_issuetype_fields(jira, jira_project.project_key, jira_instance.default_issue_type)
         fields = prepare_jira_issue_fields(
-                project_key = jira_project.project_key,
-                issuetype_name = jira_instance.default_issue_type,
-                summary = jira_summary(obj),
-                description = jira_description(obj),
-                component_name = jira_project.component if not issue.fields.components else None,
-                labels = labels,
-                environment = jira_environment(obj),
-                priority_name = jira_priority(obj),
-                issuetype_fields = issuetype_fields)
+            project_key=jira_project.project_key,
+            issuetype_name=jira_instance.default_issue_type,
+            summary=jira_summary(obj),
+            description=jira_description(obj),
+            component_name=jira_project.component if not issue.fields.components else None,
+            labels=labels,
+            environment=jira_environment(obj),
+            priority_name=jira_priority(obj),
+            issuetype_fields=issuetype_fields)
 
         logger.debug('sending fields to JIRA: %s', fields)
 
@@ -995,12 +995,12 @@ def get_issuetype_fields(
             try:
                 project = meta['projects'][0]
             except Exception as e:
-                raise JIRAError(f"Project misconfigured or no permissions in Jira ?")
+                raise JIRAError("Project misconfigured or no permissions in Jira ?")
 
             try:
                 issuetype_fields = project['issuetypes'][0]['fields'].keys()
             except Exception as e:
-                raise JIRAError(f"Misconfigured default issue type ?")
+                raise JIRAError("Misconfigured default issue type ?")
 
         else:
             try:
@@ -1015,7 +1015,7 @@ def get_issuetype_fields(
                     break
 
             if not issuetype_id:
-                raise JIRAError(f"Issue type ID can not be matched. Misconfigured default issue type ?")
+                raise JIRAError("Issue type ID can not be matched. Misconfigured default issue type ?")
 
             try:
                 issuetype_fields = jira.createmeta_fieldtypes(project_key, issuetype_id)
@@ -1025,16 +1025,17 @@ def get_issuetype_fields(
             try:
                 issuetype_fields = [f['fieldId'] for f in issuetype_fields['values']]
             except Exception as e:
-                raise JIRAError(f"Misconfigured default issue type ?")
+                raise JIRAError("Misconfigured default issue type ?")
 
     except JIRAError as e:
         message = f"Failed retrieving field metadata from Jira version: {jira._version}, project: {project_key}, issue type: {issuetype_name}. {e.text}"
         logger.warn(message)
         add_error_message_to_response(message)
 
-        raise JIRAError(status_code = e.status_code, text = message)
+        raise JIRAError(status_code=e.status_code, text=message)
 
     return issuetype_fields
+
 
 def is_jira_project_valid(jira_project):
     try:
