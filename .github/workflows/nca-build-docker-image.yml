@@ -1,0 +1,244 @@
+name: "NCA: build Docker images and package Helm chart"
+
+env:
+  DD_IMAGE_REPO_PREFIX: "/defectdojo-image"
+  DD_CHART_REPO_PREFIX: "/defectdojo-chart"
+  DD_ECR_TEST_ACCOUNT: "182084413329"
+  DD_ECR_PROD_ACCOUNT: "182084413329"
+
+on:
+  workflow_dispatch:
+  push:
+    branch:
+      # uncomment this (and update to the current major version) if you want an
+      # image built for each commit
+      #- tag-2.16.1-NCA
+      # nca/X naming is used in actions below, adjust accordingly if needed
+      - nca/feature/*
+    tag:
+      - nca/release/*
+
+# On each push to the aforementioned branches or tags with names matching the
+# pattern above, the following happens:
+#
+# - Depending on Git reference name (branch or tag name) we determine a release
+#   for a would-be artifact.
+#   - nca/release/<RESULTING NAME>
+#   - nca/feature/<RESULTING NAME>
+#   - tag-VERSION-NCA --> VERSION-nca-GIT_SHA_FIRST_8_CHARS, i.e. 2.16.1-nca-aabbccdd
+#
+# - Note that when pushing to nca/feature branch or creating a nca/release tag,
+#   the artifacts will have the same name (will overwrite the previous
+#   versions). However, when pushing to tag-VERSION-NCA branch, each resulting
+#   artifact will be unique.
+#
+# - We also determine if it is a release build or just a test build. This
+#   affects on where the resulting image will be pushed to.
+#
+# - Docker images (nginx and django) are built. They are tagged with release
+#   determined above and pushed to repositories stated in environment variables
+#   above. The same image is pushed to both repositories.
+
+
+jobs:
+  build_images:
+    name: build and push DefectDojo Docker images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+          docker-image: [django, nginx]
+          os: [debian]
+          platform: [amd64]
+    steps:
+      - name: set Docker tag to the release
+        if: ${{ startsWith(github.ref_name, 'nca/release/') }}
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF_NAME#nca/release/}" >> $GITHUB_ENV
+          echo "DD_REGISTRY=${DD_ECR_PROD_ACCOUNT}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_PROD_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: set Docker tag to the feature branch name
+        if: ${{ startsWith(github.ref_name, 'nca/feature/') }}
+        run: |
+          echo "RELEASE_VERSION=${GITHUB_REF_NAME#nca/feature/}" >> $GITHUB_ENV
+          echo "DD_REGISTRY=${DD_ECR_TEST_ACCOUNT}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_TEST_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: set Docker tag to the main branch name and hash
+        if: ${{ startsWith(github.ref_name, 'tag-') }}
+        run: |
+          RELEASE_VERSION="${GITHUB_REF_NAME#tag-}"
+          echo "RELEASE_VERSION=$(echo $RELEASE_VERSION | tr '[:upper:]' '[:lower:]')-${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+          echo "DD_REGISTRY=${DD_ECR_TEST_ACCOUNT}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_TEST_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: reporting the resulting versions
+        run: |
+          echo building docker image tag ${{ env.RELEASE_VERSION }}
+
+      - name: checkout the repo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Set 8.8.8.8 as dns server
+        run: |
+          sudo sed -i 's/#DNS=/DNS=8.8.8.8 8.8.4.4/g' /etc/systemd/resolved.conf
+          sudo systemctl daemon-reload
+          sudo systemctl restart systemd-networkd
+          sudo systemctl restart systemd-resolved
+
+      - name: Configure AWS prod credentials (nca/release mode)
+        if: ${{ startsWith(github.ref_name, 'nca/release/') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_PROD_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_PROD_SECRET_KEY }}
+
+      - name: Configure AWS test credentials (nca/feature mode)
+        if: ${{ startsWith(github.ref_name, 'nca/feature/') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_TEST_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_TEST_SECRET_KEY }}
+
+      - name: Configure AWS test credentials (tag- mode)
+        if: ${{ startsWith(github.ref_name, 'tag-') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_TEST_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_TEST_SECRET_KEY }}
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # 2.0.1
+        with:
+          registries: ${{ env.DD_ECR_ACCOUNT }}
+
+      - name: setup Docker buildx
+        id: buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: cache Docker layers
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        env:
+          docker-image: ${{ matrix.docker-image }}
+        with:
+          path: /tmp/.buildx-cache-${{ env.docker-image }}
+          key: ${{ runner.os }}-buildx-${{ env.docker-image }}-${{ github.sha }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ env.docker-image }}-${{ github.sha }}
+            ${{ runner.os }}-buildx-${{ env.docker-image }}-
+
+      - name: build and push image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        env:
+          DOCKER_BUILD_CHECKS_ANNOTATIONS: false
+          docker-image: ${{ matrix.docker-image }}
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ env.RELEASE_VERSION }}
+        with:
+          push: true
+          tags: ${{ env.REGISTRY }}${{ env.DD_IMAGE_REPO_PREFIX }}/defectdojo-${{ env.docker-image }}:${{ env.IMAGE_TAG }}
+          file: ./Dockerfile.${{ env.docker-image }}-debian
+          context: .
+          cache-from: type=local,src=/tmp/.buildx-cache-${{ env.docker-image }}
+          cache-to: type=local,dest=/tmp/.buildx-cache-${{ env.docker-image }}
+
+  package_helm:
+    name: package Helm chart
+    runs-on: ubuntu-latest
+    steps:
+      # the first steps must be copy-pasted from above
+      - name: set ECR to use, release mode
+        if: ${{ startsWith(github.ref_name, 'nca/release/') }}
+        run: |
+          echo "VERSION_SUFFIX=-t${GITHUB_REF_NAME#nca/release/}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_PROD_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: set ECR to use, feature branch mode
+        if: ${{ startsWith(github.ref_name, 'nca/feature/') }}
+        run: |
+          echo "VERSION_SUFFIX=-feature+${GITHUB_REF_NAME#nca/feature/}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_TEST_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: set ECR to use, release branch mode
+        if: ${{ startsWith(github.ref_name, 'tag-') }}
+        run: |
+          t=$(echo ${GITHUB_REF_NAME} | tr '[:upper:]' '[:lower:]')
+          t="${t#tag-}"
+          t="${t%-nca}"
+          echo "VERSION_SUFFIX=-t$(echo $t | tr '[:upper:]' '[:lower:]').git${GITHUB_SHA:0:8}" >> $GITHUB_ENV
+          echo "DD_ECR_ACCOUNT=${DD_ECR_PROD_ACCOUNT}" >> $GITHUB_ENV
+
+      - name: checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@b9e51907a09c216f16ebe8536097933489208112 # v4.3.0
+
+      - name: configure Helm repos
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm dependency list ./helm/defectdojo
+          helm dependency update ./helm/defectdojo
+
+      - name: Add yq
+        uses: mikefarah/yq@b534aa9ee5d38001fba3cd8fe254a037e4847b37 # v4.45.4
+
+      - name: set Helm chart versopm
+        id: set-helm-chart-version
+        run: |
+          echo "CHART_VERSION=$(yq -e '.version' helm/defectdojo/Chart.yaml)${{ env.VERSION_SUFFIX }}" >> $GITHUB_ENV
+
+      - name: package Helm chart
+        id: package-helm-chart
+        run: |
+          mkdir build
+          yq -i '.version="${{ env.CHART_VERSION }}"' helm/defectdojo/Chart.yaml
+          helm package helm/defectdojo/ --destination ./build
+
+      - name: Configure AWS prod credentials (nca/release mode)
+        if: ${{ startsWith(github.ref_name, 'nca/release/') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_PROD_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_PROD_SECRET_KEY }}
+
+      - name: Configure AWS test credentials (nca/feature mode)
+        if: ${{ startsWith(github.ref_name, 'nca/feature/') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_TEST_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_TEST_SECRET_KEY }}
+
+      - name: Configure AWS test credentials (tag- mode)
+        if: ${{ startsWith(github.ref_name, 'tag-') }}
+        uses: aws-actions/configure-aws-credentials@b47578312673ae6fa5b5096b330d9fbac3d116df # v4.2.1
+        with:
+          aws-region: eu-central-1
+          aws-access-key-id: ${{ secrets.DD_ECR_TEST_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.DD_ECR_TEST_SECRET_KEY }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076 # 2.0.1
+        with:
+          registries: ${{ env.DD_ECR_ACCOUNT }}
+
+      - name: get caller identity 1
+        run: |
+          aws sts get-caller-identity
+
+      - name: Push helm chart to AWS ECR
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          helm push ./build/defectdojo-*.tgz oci://${{ env.REGISTRY }}${{ env.DD_CHART_REPO_PREFIX }}/
