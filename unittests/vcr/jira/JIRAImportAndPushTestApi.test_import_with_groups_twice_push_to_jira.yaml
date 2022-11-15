@@ -20,19 +20,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbOTtE1qbqIHFVmF7Z5kkbRJsJI2pUmFZdn/boqLH7fhneeZ
-        lzlBq4LZzw4kvMc4BbnZaGNNF7X/8ERFp0Lo1UhGEyGDTzOH3o8JpoiUIMF8t7152d0/N7/b7TK0
-        aQL5ukIZZnjIQJvJ+eNgxtgcJ5MO3Dq/6CS1S+/0twIyCQyrS3in4goyZCzHOqeiwVqikKwiiHiV
-        SEx+MHPqbfrhH3vdIEpGZVUT5PyH7YaH0foE8pIKW1hrC1EzxrGoEctKMU47hZp3QpQGC/63ILq1
-        4bGfFazvWLW4+OQ7tcYncJcJzPi238H5/AUAAP//AwBOFMsaWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:21:58.066+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - 847b2dc585c4ff83
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -66,6 +63,8 @@ interactions:
       - '121'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -489,19 +488,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbPTtE1qbqIHFVmF7Z5kkbRJsJImpUmFZdn/boqLH7fhneeZ
-        lzlBJ4PezxYEvMc4BbHZKG10H5X/8ERGK0MYpCNOR8jgU89h8C7BBWJBkGC+29687O6f29/tdhm7
-        NIF4XaEMMzxkoPRk/XHULrbHSacDt9YvKkndMlj1rYBIAsX6Et7JuIIUKc2xyQveYiOQC1oTRLxK
-        JCY/6Dn1tsP4j71uEQWlApGwpvxh+/HBGZ9AVhXclMaYkjeUMiwbxKqWlBW9RMV6ziuNJftbEO3a
-        8DjMEtZ3jFxsfPK9XOMT2MsE2r3td3A+fwEAAP//AwDlGpIYWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:22:00.683+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - fd976d680236c294
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -535,6 +531,8 @@ interactions:
       - '123'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -1029,19 +1027,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbPTpG1qbqIHFVmF7Z5kkbRJsJImpUmFZdn/boqLH7fhneeZ
-        lzlBJ4PezxYEvMc4BbHZKG10H5X/8ERGK0MYpCNOR8jgU89h8C7BBWJBkGC+29687O6f29/tdhm7
-        NIF4XaEMMzxkoPRk/XHULrbHSacDt9YvKkndMlj1rYBIAsXqEt7JuIIUKc2xyQveYiOQC1oRRLxK
-        JCY/6Dn1tsP4j71uEQWlAhlhtPxh+/HBGZ/Auiy4YcYYxhtKa2QNYllJWhe9RFX3nJcaWf23INq1
-        4XGYJazvGLnY+OR7ucYnsJcJtHvb7+B8/gIAAP//AwBmXPc/WgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:22:03.324+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - 5ab84bd0a01d7507
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -1075,6 +1070,8 @@ interactions:
       - '106'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK

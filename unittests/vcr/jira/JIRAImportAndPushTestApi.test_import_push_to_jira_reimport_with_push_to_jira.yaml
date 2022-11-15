@@ -20,19 +20,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbuTtE26uYkeVGQVtnsSkbRJsJImpUmFZdn/boqLH7fhneeZ
-        lzlBJ4M+zBYEvMc4BbHZKG10H5X/8IWMVoYwSFc4HSGDTz2HwbsEE0RSYIH5fnf9vL97an+3u2Xs
-        0gTiZYUyzPA1A6Un64+jdrE9TjoduLF+UUnqlsGqbwVEEijWl/BWxhWkSGmOTU54i41ALmhdIOJV
-        IjH5Qc+ptx3Gf+y2RRRkK2pWcOQ/bD/eO+MTyCrCTWmMKXlDKcOyQaxqSRnpJSrWc15pLNnfgmjX
-        hodhlrC+Y+Ri46Pv5RqfwF4m0O7tsIfz+QsAAP//AwCgSauXWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:19:56.707+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - c190bc0dfabc4382
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -66,6 +63,8 @@ interactions:
       - '126'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -456,19 +455,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/0uuttlJ0jZtbqIHFVmFdk8ikjYJVtKkNKmwLPvfTXHx4za88zzz
-        MifUy6APi0UCvcc4B7HbKW30EJX/8FhGK0MYpcNOR5ShT72E0bsEEwCCAUPe7q+f27un7ne7X6c+
-        TUi8bFAGGbxmSOnZ+uOkXeyOs04HbqxfVZL6dbTqW0EiCRTKS3gr4wZSoDSHOie8g1oAF7TEAHCV
-        SEh+0Evq7cbpH9t0AII0omwwZeyHHaZ7Z3wCq4Jww4wxjNeUVsBqgKKUtCKDBFUNnBcaWPW3INqt
-        4WFcJNreMXK18dEPcotPyF4mpN3boUXn8xcAAAD//wMAKEUG7VoBAAA=
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:19:59.233+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - f3f7da3ee91e6705
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -502,6 +498,8 @@ interactions:
       - '121'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -892,19 +890,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPS0vEMBSF/0u2tpnT9JGanehCRUZhOisZJG0SrKRJaVNhGOa/m+LgY3c59/vu
-        4Z5IK2e9nywR5D2EcRabjdJGd0H5D09lsHKee+mo04Ek5FNPc+9dhDMgo6BId9ubl939c/O73S5D
-        GyciXlcoQYJDQpQerT8O2oXmOOp44Nb6RUWpXXqrvhUiosBQXsI7GVaQgbEUdZrxBrUAF6ykAK4i
-        iejPeoq9TT/8Y68bQDAI5LQsix+2Gx6c8RGsioyb3BiT85qxCnkNFKVkVdZJqKrjvNDIq78Fwa4N
-        j/0kyfqOkYsNT76Ta3wi9jIR7d72O3I+fwEAAP//AwDebsfsWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:20:03.554+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - b175208e5e1b73a8
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -938,6 +933,8 @@ interactions:
       - '125'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -1064,19 +1061,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPS0vEMBSF/0u2tpnT9JGanehCRUZhOisZJG0SrKRJaVNhGOa/m+LgY3c59/vu
-        4Z5IK2e9nywR5D2EcRabjdJGd0H5D09lsHKee+mo04Ek5FNPc+9dhDMgo6BId9ubl939c/O73S5D
-        GyciXlcoQYJDQpQerT8O2oXmOOp44Nb6RUWpXXqrvhUiosBQXsI7GVaQgbEUdZrxBrUAF6ykAK4i
-        iejPeoq9TT/8Y68bQDAIFJQX+Q/bDQ/O+AhWRcZNbozJec1YhbwGilKyKuskVNVxXmjk1d+CYNeG
-        x36SZH3HyMWGJ9/JNT4Re5mIdm/7HTmfvwAAAP//AwCuUCoeWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:20:04.743+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - 456f93ea88c7c4b9
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -1110,6 +1104,8 @@ interactions:
       - '122'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -1497,19 +1493,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbPTtE26uYkeVGQVtnsSkbRJsJImpUmFZdn/boqLH7fhneeZ
-        lzlBJ4M+zBYEvMc4BbHZKG10H5X/8ERGK0MYpCNOR8jgU89h8C7BBWJBkGC+310/7++e2t/tbhm7
-        NIF4WaEMM3zNQOnJ+uOoXWyPk04HbqxfVJK6ZbDqWwGRBIr1JbyVcQUpUppjkxe8xUYgF7QmiHiV
-        SEx+0HPqbYfxH7ttEQVFgYxsm+KH7cd7Z3wCWVVwUxpjSt5QyrBsEKtaUlb0EhXrOa80luxvQbRr
-        w8MwS1jfMXKx8dH3co1PYC8TaPd22MP5/AUAAP//AwD8FvxdWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:20:06.981+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - 4bce999698c66ab8
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -1543,6 +1536,8 @@ interactions:
       - '121'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -1930,19 +1925,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPS2vDMBCE/8teaytr+SFXt9Ic2lLSgp1TCUW2JOIiS8aSCyHkv1emoY/bMPvN
-        DHuGTni1nw1wOIYweb7ZSKVVH6T7cEQEI7wfhCVWBUjgU81+cDbCGWJGkGDa7O5em4eX9ve6W8Yu
-        KuBvK5RggocEpJqMO43KhvY0qVhwb9wiY6hbBiO/I8BjgGJ5NbcirCBFSlOs04y1WHNknJYEEW8i
-        iTHv1Rx322H8x962iJxiLCRFWfyw/fhotYtgVWRM51rrnNWUVpjXiEUpaJX1AmXVM1YozKu/A8Gs
-        C0/DLGB9R4vFhGfXi9U+g7kqUPZ938Dl8gUAAP//AwD3g3D9WgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:20:10.454+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - b79b4c05c252aac2
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -1976,6 +1968,8 @@ interactions:
       - '116'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK

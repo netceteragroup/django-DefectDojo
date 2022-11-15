@@ -20,19 +20,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPTUvEMBCG/8tcbbPTtElqbqIHFVmF7Z5kkbRJsJImpU2FZdn/boqLH7fhneeZ
-        lzlBq2aznxxIeI9xnOVmo401XdThIxAVnZrnXnniTYQMPs0098EnuEAsCBLMd9ubl939c/O73S5D
-        myaQryuUYYaHDLQZXTgOxsfmOJp04NaFRSepXXqnvxWQSaDILuGdiitIkdIc67wQDdYShaSMIOJV
-        IjH5s5lSb9MP/9jrBlFSKhkjJeM/bDc8eBsSyKtC2NJaW4qaUo5ljVgxRXnRKdS8E6IyWPK/BdGt
-        DY/9pGB9x6rFxafQqTU+gbtMYPzbfgfn8xcAAAD//wMAPtlVjFoBAAA=
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:22:55.356+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - c9e6816187408c8b
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -66,6 +63,8 @@ interactions:
       - '122'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
@@ -459,19 +458,16 @@ interactions:
     uri: https://defectdojo.atlassian.net/rest/api/2/serverInfo
   response:
     body:
-      string: !!binary |
-        H4sIAAAAAAAAA1SPy2rDMBBF/2W2tZWx/JCjXUkXbSlpwc6qlCJbEnGRJWPJhRDy75Vp6GM33Dln
-        LnOGTnh1mA1wOIYweb7ZSKVVH6T7cEQEI7wfhCVWBUjgU81+cDbCGWJGkGDa7G9fmvvn9ne7X8Yu
-        TsBfVyjBBN8SkGoy7jQqG9rTpOKBnXGLjFK3DEZ+K8CjQLG8hncirCBFSlOs04y1WHNknJYEEW8i
-        idH3ao697TD+Y7ctIqeUl4ww3P6w/fhgtYtgVWRM51rrnNWUVpjXiEUpaJX1AmXVM1YozKu/BcGs
-        DY/DLGB9R4vFhCfXizU+g7lOoOz7oYHL5QsAAP//AwAiZRWMWgEAAA==
+      string: '{"baseUrl": "https://defectdojo.atlassian.net", "version": "8.4.0",
+        "versionNumbers": [8, 4, 0], "deploymentType": "Cloud", "buildNumber": 100205,
+        "buildDate": "2022-08-17T08:07:25.000+0200", "serverTime": "2022-08-19T00:22:57.709+0200",
+        "scmInfo": "6417f3fff3782260380045a261ca0d6c774e0360", "serverTitle": "Jira",
+        "defaultLocale": {"locale": "en_US"}}'
     headers:
       Atl-Traceid:
       - 0d1502150baf38d1
       Cache-Control:
       - no-cache, no-store, no-transform
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -505,6 +501,8 @@ interactions:
       - '122'
       X-Xss-Protection:
       - 1; mode=block
+      content-length:
+      - '346'
     status:
       code: 200
       message: OK
