@@ -12,9 +12,10 @@ on:
   workflow_dispatch:
   push:
     branch:
-      # UPDATE THIS on each major version change
-      - tag-2.16.1-NCA
-      # nca/X naming is used below, adjust accordingly if needed
+      # uncomment this (and update to the current major version) if you want an
+      # image built for each commit
+      #- tag-2.16.1-NCA
+      # nca/X naming is used in actions below, adjust accordingly if needed
       - nca/feature/*
     tag:
       - nca/release/*
