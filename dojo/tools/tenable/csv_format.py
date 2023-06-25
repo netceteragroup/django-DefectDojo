@@ -91,6 +91,7 @@ class TenableCSVParser(object):
             mitigation = str(row.get("Solution", "N/A"))
             impact = row.get("Description", "N/A")
             references = row.get("See Also", "N/A")
+            vuln_id_from_tool = row.get("Plugin", "N/A")
             # Determine if the current row has already been processed
             dupe_key = severity + title + row.get('Host', 'No host') + str(row.get('Port', 'No port')) + row.get('Synopsis', 'No synopsis')
             # Finding has not been detected in the current report. Proceed with parsing
@@ -103,7 +104,8 @@ class TenableCSVParser(object):
                     severity=severity,
                     mitigation=mitigation,
                     impact=impact,
-                    references=references
+                    references=references,
+                    vuln_id_from_tool=vuln_id_from_tool
                 )
 
                 # manage CVSS vector (only v3.x for now)
