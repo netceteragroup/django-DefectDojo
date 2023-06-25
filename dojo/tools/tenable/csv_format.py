@@ -106,6 +106,7 @@ class TenableCSVParser:
             references += "\nTenable Plugin ID: " + row.get("Plugin", "N/A")
             references += "\nPlugin Publication Date: " + row.get("Plugin Publication Date", "N/A")
             references += "\nPlugin Modification Date: " + row.get("Plugin Modification Date", "N/A")
+            vuln_id_from_tool = row.get("Plugin", row.get("definition.plugin", "N/A"))
             # Determine if the current row has already been processed
             dupe_key = (
                 severity
@@ -126,6 +127,7 @@ class TenableCSVParser:
                     mitigation=mitigation,
                     impact=impact,
                     references=references,
+                    vuln_id_from_tool=vuln_id_from_tool,
                 )
 
                 # manage CVSS vector (only v3.x for now)
