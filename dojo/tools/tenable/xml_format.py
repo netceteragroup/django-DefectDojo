@@ -223,6 +223,8 @@ class TenableXMLParser:
                     if cvss is not None:
                         severity = self.get_cvss_severity(cvss)
 
+                    vuln_id_from_tool = str(item.attrib.get("pluginID", ""))
+
                     # Determine the current entry has already been parsed in
                     # this report
                     dupe_key = severity + title
@@ -238,6 +240,7 @@ class TenableXMLParser:
                             cwe=cwe,
                             cvssv3=cvssv3,
                             cvssv3_score=cvssv3_score,
+                            vuln_id_from_tool=vuln_id_from_tool,
                         )
                         find.unsaved_endpoints = []
                         find.unsaved_vulnerability_ids = []
