@@ -1922,19 +1922,73 @@ def sla_compute_and_notify(*args, **kwargs):
     """
     import dojo.jira_link.helper as jira_helper
 
-    def _notify(finding, title):
-        if not finding.test.engagement.product.disable_sla_breach_notifications:
-            create_notification(
-                event='sla_breach',
-                title=title,
-                finding=finding,
-                url=reverse('view_finding', args=(finding.id,)),
-                sla_age=sla_age
-            )
+    class NotificationEntry:
+        def __init__(self, finding=None, sla_age=-1, jira_issue=None, do_jira_sla_comment=False):
+            self.finding = finding
+            self.sla_age = sla_age
+            self.jira_issue = jira_issue
+            self.do_jira_sla_comment = do_jira_sla_comment
 
-            if do_jira_sla_comment:
-                logger.info("Creating JIRA comment to notify of SLA breach information.")
-                jira_helper.add_simple_jira_comment(jira_instance, jira_issue, title)
+    def _add_notification(finding, kind):
+        # sla_age, jira_issue, do_jira_sla_comment are taken from the context
+        # kind can be one of: breached, prebreach, breaching
+        if finding.test.engagement.product.disable_sla_breach_notifications:
+            return
+
+        notification = NotificationEntry(finding=finding,
+                                         sla_age=sla_age,
+                                         jira_issue=jira_issue,
+                                         do_jira_sla_comment=do_jira_sla_comment)
+
+        pt = finding.test.engagement.product.prod_type.name
+        p = finding.test.engagement.product.name
+
+        if pt in combined_notifications:
+            if p in combined_notifications[pt]:
+                if kind in combined_notifications[pt][p]:
+                    combined_notifications[pt][p][kind].append(notification)
+                else:
+                    combined_notifications[pt][p][kind] = [notification]
+            else:
+                combined_notifications[pt][p] = {kind: [notification]}
+        else:
+            combined_notifications[pt] = {p: {kind: [notification]}}
+
+
+    def _create_notifications():
+        send_combined_sla_notifications = False
+
+        if send_combined_sla_notifications:
+            return
+        else:
+            for pt in combined_notifications:
+                for p in combined_notifications[pt]:
+                    for kind in combined_notifications[pt][p]:
+                        for n in combined_notifications[pt][p][kind]:
+                            title = "Finding %s - " % (n.finding.id)
+                            if kind == 'breached':
+                                abs_sla_age = abs(n.sla_age)
+                                period = "day"
+                                if abs_sla_age > 1:
+                                    period = "days"
+                                title += "SLA breached by %d %d! Overdue notice" % (abs_sla_age, period)
+                            elif kind == 'prebreach':
+                                title += "SLA pre-breach warning - %d day(s) left" % (n.sla_age)
+                            elif kind == 'breaching':
+                                title += "SLA is breaching today"
+
+                            create_notification(
+                                event='sla_breach',
+                                title=title,
+                                finding=n.finding,
+                                url=reverse('view_finding', args=(n.finding.id,)),
+                                sla_age=n.sla_age
+                            )
+
+                            if do_jira_sla_comment:
+                                logger.info("Creating JIRA comment to notify of SLA breach information.")
+                                jira_helper.add_simple_jira_comment(jira_instance, n.jira_issue, title)
+
 
     # exit early on flags
     system_settings = System_Settings.objects.get()
@@ -1944,6 +1998,8 @@ def sla_compute_and_notify(*args, **kwargs):
 
     jira_issue = None
     jira_instance = None
+    # notifications list per product per product type
+    combined_notifications = {}
     try:
         if system_settings.enable_finding_sla:
             logger.info("About to process findings for SLA notifications.")
@@ -2032,23 +2088,27 @@ def sla_compute_and_notify(*args, **kwargs):
                     logger.info("Finding {} has breached by {} days.".format(finding.id, abs(sla_age)))
                     abs_sla_age = abs(sla_age)
                     if not system_settings.enable_notify_sla_exponential_backoff or abs_sla_age == 1 or (abs_sla_age & (abs_sla_age - 1) == 0):
-                        period = "day"
-                        if abs_sla_age > 1:
-                            period = "days"
-                        _notify(finding, 'Finding {} - SLA breached by {} {}! Overdue notice'.format(finding.id, abs_sla_age, period))
+                        #period = "day"
+                        #if abs_sla_age > 1:
+                        #    period = "days"
+                        #_notify(finding, 'Finding {} - SLA breached by {} {}! Overdue notice'.format(finding.id, abs_sla_age, period))
+                        _add_notification(finding, 'breached')
                     else:
                         logger.info("Skipping notification as exponential backoff is enabled and the SLA is not a power of two")
                 # The finding is within the pre-breach period
                 elif (sla_age > 0) and (sla_age <= settings.SLA_NOTIFY_PRE_BREACH):
                     pre_breach_count += 1
                     logger.info("Security SLA pre-breach warning for finding ID {}. Days remaining: {}".format(finding.id, sla_age))
-                    _notify(finding, 'Finding {} - SLA pre-breach warning - {} day(s) left'.format(finding.id, sla_age))
+                    #_notify(finding, 'Finding {} - SLA pre-breach warning - {} day(s) left'.format(finding.id, sla_age))
+                    _add_notification(finding, 'prebreach')
                 # The finding breaches the SLA today
                 elif (sla_age == 0):
                     at_breach_count += 1
                     logger.info("Security SLA breach warning. Finding ID {} breaching today ({})".format(finding.id, sla_age))
-                    _notify(finding, "Finding {} - SLA is breaching today".format(finding.id))
+                    #_notify(finding, "Finding {} - SLA is breaching today".format(finding.id))
+                    _add_notification(finding, 'breaching')
 
+            _create_notifications()
             logger.info("SLA run results: Pre-breach: {}, at-breach: {}, post-breach: {}, post-breach-no-notify: {}, with-jira: {}, TOTAL: {}".format(
                 pre_breach_count,
                 at_breach_count,
