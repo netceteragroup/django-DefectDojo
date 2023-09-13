@@ -3763,6 +3763,9 @@ class Notifications(models.Model):
     sla_breach = MultiSelectField(choices=NOTIFICATION_CHOICES, default=DEFAULT_NOTIFICATION, blank=True,
         verbose_name=_('SLA breach'),
         help_text=_('Get notified of (upcoming) SLA breaches'))
+    sla_breach_combined = MultiSelectField(choices=NOTIFICATION_CHOICES, default=DEFAULT_NOTIFICATION, blank=True,
+        verbose_name=_('SLA breach (combined)'),
+        help_text=_('Get notified of (upcoming) SLA breaches (a message per project)'))
     risk_acceptance_expiration = MultiSelectField(choices=NOTIFICATION_CHOICES, default='alert', blank=True,
         verbose_name=_('Risk Acceptance Expiration'),
         help_text=_('Get notified of (upcoming) Risk Acceptance expiries'))
@@ -3805,6 +3808,7 @@ class Notifications(models.Model):
                 result.review_requested = merge_sets_safe(result.review_requested, notifications.review_requested)
                 result.other = merge_sets_safe(result.other, notifications.other)
                 result.sla_breach = merge_sets_safe(result.sla_breach, notifications.sla_breach)
+                result.sla_breach_combined = merge_sets_safe(result.sla_breach_combined, notifications.sla_breach_combined)
                 result.risk_acceptance_expiration = merge_sets_safe(result.risk_acceptance_expiration, notifications.risk_acceptance_expiration)
 
         return result
