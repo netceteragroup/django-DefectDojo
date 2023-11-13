@@ -28,7 +28,7 @@ import calendar as tcalendar
 from dojo.github import add_external_issue_github, update_external_issue_github, close_external_issue_github, reopen_external_issue_github
 from dojo.models import Finding, Engagement, Finding_Group, Finding_Template, Product, \
     Test, User, Dojo_User, System_Settings, Notifications, Endpoint, Benchmark_Type, \
-    Language_Type, Languages, Dojo_Group_Member, Dojo_Group, NOTIFICATION_CHOICES
+    Language_Type, Languages, Dojo_Group_Member, Dojo_Group, NOTIFICATION_CHOICES, Risk_Acceptance
 from asteval import Interpreter
 from dojo.notifications.helper import create_notification
 import logging
@@ -2522,7 +2522,7 @@ def sum_by_severity_level(metrics):
 
 
 def get_open_findings_burndown(product):
-    findings = Finding.objects.filter(test__engagement__product=product)
+    findings = Finding.objects.filter(test__engagement__product=product, duplicate=False)
     f_list = list(findings)
 
     curr_date = datetime.combine(datetime.now(), datetime.min.time())
@@ -2566,6 +2566,20 @@ def get_open_findings_burndown(product):
             if f.is_mitigated:
                 f_mitigated_date = f.mitigated.timestamp()
                 if f_mitigated_date >= d_start and f_mitigated_date < d_end:
+                    if f.severity == 'Critical':
+                        critical_count -= 1
+                    if f.severity == 'High':
+                        high_count -= 1
+                    if f.severity == 'Medium':
+                        medium_count -= 1
+                    if f.severity == 'Low':
+                        low_count -= 1
+                    if f.severity == 'Info':
+                        info_count -= 1
+
+            if f.risk_accepted:
+                f_risk_accepted = f.risk_acceptance.created.timestamp()
+                if f_risk_accepted >= d_start and f_risk_accepted < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
                     if f.severity == 'High':
