@@ -2564,7 +2564,7 @@ def get_open_findings_burndown(product):
                     info_count += 1
 
             if f.is_mitigated:
-                f_mitigated_date = f.mitigated.timestamp()
+                f_mitigated_date = datetime.combine(f.mitigated.timestamp(), datetime.min.time()).timestamp()
                 if f_mitigated_date >= d_start and f_mitigated_date < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
@@ -2577,8 +2577,8 @@ def get_open_findings_burndown(product):
                     if f.severity == 'Info':
                         info_count -= 1
 
-            if f.risk_accepted:
-                f_risk_accepted = f.risk_acceptance.created.timestamp()
+            elif f.risk_accepted:
+                f_risk_accepted = datetime.combine(f.risk_accepted.created().timestamp(), datetime.min.time()).timestamp()
                 if f_risk_accepted >= d_start and f_risk_accepted < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
