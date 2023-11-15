@@ -2528,11 +2528,16 @@ def get_open_findings_burndown(product):
     curr_date = datetime.combine(datetime.now(), datetime.min.time())
     start_date = curr_date - timedelta(days=90)
 
-    critical_count = len(list(findings.filter(date__lt=start_date).filter(severity='Critical')))
-    high_count = len(list(findings.filter(date__lt=start_date).filter(severity='High')))
-    medium_count = len(list(findings.filter(date__lt=start_date).filter(severity='Medium')))
-    low_count = len(list(findings.filter(date__lt=start_date).filter(severity='Low')))
-    info_count = len(list(findings.filter(date__lt=start_date).filter(severity='Info')))
+    critical_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+                              .filter(severity='Critical')))
+    high_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+                          .filter(severity='High')))
+    medium_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+                            .filter(severity='Medium')))
+    low_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+                         .filter(severity='Low')))
+    info_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+                          .filter(severity='Info')))
 
     running_min, running_max = float('inf'), float('-inf')
     past_90_days = {
