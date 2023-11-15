@@ -2590,9 +2590,9 @@ def get_open_findings_burndown(product):
                         info_count -= 1
 
             elif f.risk_accepted:
-                f_risk_accepted = f.risk_accepted.created().timestamp()
-                print("f_risk_accepted: " + str(f_risk_accepted))
-                if f_risk_accepted >= d_start and f_risk_accepted < d_end:
+                f_risk_accepted_date = f.risk_acceptance.created.timestamp()
+                print("f_risk_accepted: " + str(f_risk_accepted_date))
+                if f_risk_accepted_date >= d_start and f_risk_accepted_date < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
                     if f.severity == 'High':
