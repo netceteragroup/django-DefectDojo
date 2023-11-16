@@ -2525,20 +2525,68 @@ def get_open_findings_burndown(product):
     findings = Finding.objects.filter(test__engagement__product=product, duplicate=False)
     f_list = list(findings)
 
+
     curr_date = datetime.combine(datetime.now(), datetime.min.time())
     start_date = curr_date - timedelta(days=90)
 
+    # critical_count = len(list(findings.filter(date__lt=start_date).filter(severity='Critical')))
+    # critical_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+    #                           .filter(severity='Critical')))
+    # high_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+    #                       .filter(severity='High')))
+    # medium_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+    #                         .filter(severity='Medium')))
+    # low_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+    #                      .filter(severity='Low')))
+    # info_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
+    #                       .filter(severity='Info')))
 
-    critical_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                              .filter(severity='Critical')))
-    high_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                          .filter(severity='High')))
-    medium_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                            .filter(severity='Medium')))
-    low_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                         .filter(severity='Low')))
-    info_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                          .filter(severity='Info')))
+    critical_count = 0;
+    high_count = 0;
+    medium_count = 0;
+    low_count = 0;
+    info_count = 0;
+
+    # count all findings older than 90 days that are still active OR will be mitigated/risk-accepted in the next 90 days.
+    for f in list(findings.filter(date__lt=start_date)):
+        if f.active:
+            if f.severity == 'Critical':
+                critical_count += 1
+            if f.severity == 'High':
+                high_count += 1
+            if f.severity == 'Medium':
+                medium_count += 1
+            if f.severity == 'Low':
+                low_count += 1
+            if f.severity == 'Info':
+                info_count += 1
+        elif f.is_mitigated:
+            f_mitigated_date = f.mitigated.timestamp()
+            if f_mitigated_date >= start_date and f_mitigated_date < curr_date:
+                if f.severity == 'Critical':
+                    critical_count += 1
+                if f.severity == 'High':
+                    high_count += 1
+                if f.severity == 'Medium':
+                    medium_count += 1
+                if f.severity == 'Low':
+                    low_count += 1
+                if f.severity == 'Info':
+                    info_count += 1
+        elif f.risk_accepted:
+            f_risk_accepted_date = f.risk_acceptance.created.timestamp()
+            print("f_risk_accepted for findings older than 90 days: " + str(f_risk_accepted_date))
+            if f_risk_accepted_date >= start_date and f_risk_accepted_date < curr_date:
+                if f.severity == 'Critical':
+                    critical_count += 1
+                if f.severity == 'High':
+                    high_count += 1
+                if f.severity == 'Medium':
+                    medium_count += 1
+                if f.severity == 'Low':
+                    low_count += 1
+                if f.severity == 'Info':
+                    info_count += 1
 
     print("number of critical_count: " + str(critical_count))
     print("number of high_count: " + str(high_count))
