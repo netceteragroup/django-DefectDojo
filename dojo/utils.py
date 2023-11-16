@@ -2550,7 +2550,7 @@ def get_open_findings_burndown(product):
     # count all findings older than 90 days that are still active OR will be mitigated/risk-accepted in the next 90 days.
     for f in list(findings.filter(date__lt=start_date)):
         if f.active:
-            print("active for findings older than 90 days: " + str(f_risk_accepted_date))
+            print("counting active findings older than 90 days")
             if f.severity == 'Critical':
                 critical_count += 1
             if f.severity == 'High':
