@@ -2562,7 +2562,7 @@ def get_open_findings_burndown(product):
                 info_count += 1
         elif f.is_mitigated:
             f_mitigated_date = f.mitigated.timestamp()
-            if f_mitigated_date >= start_date.timestamp() and f_mitigated_date < curr_date.timestamp().t:
+            if f_mitigated_date >= start_date.timestamp() and f_mitigated_date < curr_date.timestamp():
                 if f.severity == 'Critical':
                     critical_count += 1
                 if f.severity == 'High':
