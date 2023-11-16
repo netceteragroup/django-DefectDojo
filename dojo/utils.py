@@ -2610,15 +2610,15 @@ def get_open_findings_burndown(product):
     for i in range(90, -1, -1):
         start = (curr_date - timedelta(days=i))
 
+        d_start = start.timestamp()
+        d_end = (start + timedelta(days=1)).timestamp()
+
         print("calculating day " + str(d_start))
         print("number of critical_count: " + str(critical_count))
         print("number of high_count: " + str(high_count))
         print("number of medium_count: " + str(medium_count))
         print("number of low_count: " + str(low_count))
         print("number of info_count: " + str(info_count))
-
-        d_start = start.timestamp()
-        d_end = (start + timedelta(days=1)).timestamp()
 
         for f in f_list:
             f_open_date = datetime.combine(f.date, datetime.min.time()).timestamp()
