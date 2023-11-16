@@ -2563,7 +2563,7 @@ def get_open_findings_burndown(product):
                 info_count += 1
         elif f.is_mitigated:
             f_mitigated_date = f.mitigated.timestamp()
-            print("f_mitigated_date for findings older than 90 days: " + str(f_risk_accepted_date))
+            print("f_mitigated_date for findings older than 90 days: " + str(f_mitigated_date))
             if f_mitigated_date >= start_date.timestamp() and f_mitigated_date < curr_date.timestamp():
                 print("f_mitigated_date WITHIN NEXT 90 DAYS TRUE")
                 if f.severity == 'Critical':
