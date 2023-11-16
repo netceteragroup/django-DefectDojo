@@ -2562,7 +2562,7 @@ def get_open_findings_burndown(product):
                 info_count += 1
         elif f.is_mitigated:
             f_mitigated_date = f.mitigated.timestamp()
-            if f_mitigated_date >= start_date and f_mitigated_date < curr_date:
+            if f_mitigated_date >= start_date.timestamp() and f_mitigated_date < curr_date:
                 if f.severity == 'Critical':
                     critical_count += 1
                 if f.severity == 'High':
@@ -2576,7 +2576,7 @@ def get_open_findings_burndown(product):
         elif f.risk_accepted:
             f_risk_accepted_date = f.risk_acceptance.created.timestamp()
             print("f_risk_accepted for findings older than 90 days: " + str(f_risk_accepted_date))
-            if f_risk_accepted_date >= start_date and f_risk_accepted_date < curr_date:
+            if f_risk_accepted_date >= start_date.timestamp() and f_risk_accepted_date < curr_date:
                 if f.severity == 'Critical':
                     critical_count += 1
                 if f.severity == 'High':
