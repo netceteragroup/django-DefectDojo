@@ -2528,11 +2528,11 @@ def get_open_findings_burndown(product):
     curr_date = datetime.combine(datetime.now(), datetime.min.time())
     start_date = curr_date - timedelta(days=90)
 
-    critical_count = 0;
-    high_count = 0;
-    medium_count = 0;
-    low_count = 0;
-    info_count = 0;
+    critical_count = 0
+    high_count = 0
+    medium_count = 0
+    low_count = 0
+    info_count = 0
 
     # count all findings older than 90 days that are still active OR will be mitigated/risk-accepted in the next 90 days
     for f in list(findings.filter(date__lt=start_date)):
