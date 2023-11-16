@@ -2550,6 +2550,7 @@ def get_open_findings_burndown(product):
     # count all findings older than 90 days that are still active OR will be mitigated/risk-accepted in the next 90 days.
     for f in list(findings.filter(date__lt=start_date)):
         if f.active:
+            print("active for findings older than 90 days: " + str(f_risk_accepted_date))
             if f.severity == 'Critical':
                 critical_count += 1
             if f.severity == 'High':
@@ -2562,7 +2563,9 @@ def get_open_findings_burndown(product):
                 info_count += 1
         elif f.is_mitigated:
             f_mitigated_date = f.mitigated.timestamp()
+            print("f_mitigated_date for findings older than 90 days: " + str(f_risk_accepted_date))
             if f_mitigated_date >= start_date.timestamp() and f_mitigated_date < curr_date.timestamp():
+                print("f_mitigated_date WITHIN NEXT 90 DAYS TRUE")
                 if f.severity == 'Critical':
                     critical_count += 1
                 if f.severity == 'High':
@@ -2577,6 +2580,7 @@ def get_open_findings_burndown(product):
             f_risk_accepted_date = f.risk_acceptance.created.timestamp()
             print("f_risk_accepted for findings older than 90 days: " + str(f_risk_accepted_date))
             if f_risk_accepted_date >= start_date.timestamp() and f_risk_accepted_date < curr_date.timestamp():
+                print("f_risk_accepted_date WITHIN NEXT 90 DAYS TRUE")
                 if f.severity == 'Critical':
                     critical_count += 1
                 if f.severity == 'High':
@@ -2588,11 +2592,11 @@ def get_open_findings_burndown(product):
                 if f.severity == 'Info':
                     info_count += 1
 
-    print("number of critical_count: " + str(critical_count))
-    print("number of high_count: " + str(high_count))
-    print("number of medium_count: " + str(medium_count))
-    print("number of low_count: " + str(low_count))
-    print("number of info_count: " + str(info_count))
+    # print("number of critical_count: " + str(critical_count))
+    # print("number of high_count: " + str(high_count))
+    # print("number of medium_count: " + str(medium_count))
+    # print("number of low_count: " + str(low_count))
+    # print("number of info_count: " + str(info_count))
 
     running_min, running_max = float('inf'), float('-inf')
     past_90_days = {
@@ -2605,6 +2609,13 @@ def get_open_findings_burndown(product):
 
     for i in range(90, -1, -1):
         start = (curr_date - timedelta(days=i))
+
+        print("calculating day " + str(d_start))
+        print("number of critical_count: " + str(critical_count))
+        print("number of high_count: " + str(high_count))
+        print("number of medium_count: " + str(medium_count))
+        print("number of low_count: " + str(low_count))
+        print("number of info_count: " + str(info_count))
 
         d_start = start.timestamp()
         d_end = (start + timedelta(days=1)).timestamp()
@@ -2639,7 +2650,6 @@ def get_open_findings_burndown(product):
 
             elif f.risk_accepted:
                 f_risk_accepted_date = f.risk_acceptance.created.timestamp()
-                print("f_risk_accepted: " + str(f_risk_accepted_date))
                 if f_risk_accepted_date >= d_start and f_risk_accepted_date < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
