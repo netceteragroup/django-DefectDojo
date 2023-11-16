@@ -28,7 +28,7 @@ import calendar as tcalendar
 from dojo.github import add_external_issue_github, update_external_issue_github, close_external_issue_github, reopen_external_issue_github
 from dojo.models import Finding, Engagement, Finding_Group, Finding_Template, Product, \
     Test, User, Dojo_User, System_Settings, Notifications, Endpoint, Benchmark_Type, \
-    Language_Type, Languages, Dojo_Group_Member, Dojo_Group, NOTIFICATION_CHOICES, Risk_Acceptance
+    Language_Type, Languages, Dojo_Group_Member, Dojo_Group, NOTIFICATION_CHOICES
 from asteval import Interpreter
 from dojo.notifications.helper import create_notification
 import logging
@@ -2528,23 +2528,51 @@ def get_open_findings_burndown(product):
     curr_date = datetime.combine(datetime.now(), datetime.min.time())
     start_date = curr_date - timedelta(days=90)
 
+    critical_count = 0;
+    high_count = 0;
+    medium_count = 0;
+    low_count = 0;
+    info_count = 0;
 
-    critical_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                              .filter(severity='Critical')))
-    high_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                          .filter(severity='High')))
-    medium_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                            .filter(severity='Medium')))
-    low_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                         .filter(severity='Low')))
-    info_count = len(list(findings.filter(date__lt=start_date, is_mitigated=False, active=True)
-                          .filter(severity='Info')))
-
-    print("number of critical_count: " + str(critical_count))
-    print("number of high_count: " + str(high_count))
-    print("number of medium_count: " + str(medium_count))
-    print("number of low_count: " + str(low_count))
-    print("number of info_count: " + str(info_count))
+    # count all findings older than 90 days that are still active OR will be mitigated/risk-accepted in the next 90 days
+    for f in list(findings.filter(date__lt=start_date)):
+        if f.active:
+            if f.severity == 'Critical':
+                critical_count += 1
+            if f.severity == 'High':
+                high_count += 1
+            if f.severity == 'Medium':
+                medium_count += 1
+            if f.severity == 'Low':
+                low_count += 1
+            if f.severity == 'Info':
+                info_count += 1
+        elif f.is_mitigated:
+            f_mitigated_date = f.mitigated.timestamp()
+            if f_mitigated_date >= start_date.timestamp():
+                if f.severity == 'Critical':
+                    critical_count += 1
+                if f.severity == 'High':
+                    high_count += 1
+                if f.severity == 'Medium':
+                    medium_count += 1
+                if f.severity == 'Low':
+                    low_count += 1
+                if f.severity == 'Info':
+                    info_count += 1
+        elif f.risk_accepted:
+            f_risk_accepted_date = f.risk_acceptance.created.timestamp()
+            if f_risk_accepted_date >= start_date.timestamp():
+                if f.severity == 'Critical':
+                    critical_count += 1
+                if f.severity == 'High':
+                    high_count += 1
+                if f.severity == 'Medium':
+                    medium_count += 1
+                if f.severity == 'Low':
+                    low_count += 1
+                if f.severity == 'Info':
+                    info_count += 1
 
     running_min, running_max = float('inf'), float('-inf')
     past_90_days = {
@@ -2555,6 +2583,7 @@ def get_open_findings_burndown(product):
         'Info': []
     }
 
+    # count the number of open findings for the 90-day window
     for i in range(90, -1, -1):
         start = (curr_date - timedelta(days=i))
 
@@ -2562,6 +2591,7 @@ def get_open_findings_burndown(product):
         d_end = (start + timedelta(days=1)).timestamp()
 
         for f in f_list:
+            # If a finding was opened on this day we add it to the counter of that day
             f_open_date = datetime.combine(f.date, datetime.min.time()).timestamp()
             if f_open_date >= d_start and f_open_date < d_end:
                 if f.severity == 'Critical':
@@ -2575,6 +2605,7 @@ def get_open_findings_burndown(product):
                 if f.severity == 'Info':
                     info_count += 1
 
+            # If a finding was mitigated on this day we subtract it
             if f.is_mitigated:
                 f_mitigated_date = f.mitigated.timestamp()
                 if f_mitigated_date >= d_start and f_mitigated_date < d_end:
@@ -2589,9 +2620,9 @@ def get_open_findings_burndown(product):
                     if f.severity == 'Info':
                         info_count -= 1
 
+            # If a finding was risk accepted on this day we subtract it
             elif f.risk_accepted:
                 f_risk_accepted_date = f.risk_acceptance.created.timestamp()
-                print("f_risk_accepted: " + str(f_risk_accepted_date))
                 if f_risk_accepted_date >= d_start and f_risk_accepted_date < d_end:
                     if f.severity == 'Critical':
                         critical_count -= 1
