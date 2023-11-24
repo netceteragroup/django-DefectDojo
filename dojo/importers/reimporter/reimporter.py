@@ -119,27 +119,7 @@ class DojoDefaultReImporter(object):
             if findings:
                 # existing finding found
                 finding = findings[0]
-                if finding.false_p or finding.out_of_scope or finding.risk_accepted:
-                    logger.debug(
-                        "%i: skipping existing finding (it is marked as false positive:%s and/or out of scope:%s or is a risk accepted:%s): %i:%s:%s:%s",
-                        i,
-                        finding.false_p,
-                        finding.out_of_scope,
-                        finding.risk_accepted,
-                        finding.id,
-                        finding,
-                        finding.component_name,
-                        finding.component_version,
-                    )
-                    # if (
-                    #     finding.false_p == item.false_p
-                    #     and finding.out_of_scope == item.out_of_scope
-                    #     and finding.risk_accepted == item.risk_accepted
-                    # ):
-                    unchanged_items.append(finding)
-                    unchanged_count += 1
-                    continue
-                elif finding.is_mitigated:
+                if finding.is_mitigated:
                     # if the reimported item has a mitigation time, we can compare
                     if item.is_mitigated:
                         unchanged_items.append(finding)
@@ -174,7 +154,7 @@ class DojoDefaultReImporter(object):
                             # even if there is no mitigation time, skip it, because both the current finding and the reimported finding are is_mitigated
                             continue
                     else:
-                        if not do_not_reactivate:
+                        if not do_not_reactivate: # findings in scan reactivate findings in DD
                             logger.debug(
                                 "%i: reactivating: %i:%s:%s:%s",
                                 i,
@@ -242,53 +222,53 @@ class DojoDefaultReImporter(object):
                     finding.notes.add(note)
                     reactivated_items.append(finding)
                     reactivated_count += 1
+                # finding is NOT MITIGATED!
+                # There is no need for special treatment of "false-positive" or "risk-accepted"
                 else:
-                    # if finding associated to new item is none of risk accepted, mitigated, false positive or out of scope
-                    # existing findings may be from before we had component_name/version fields
                     logger.debug(
-                        "%i: updating existing finding: %i:%s:%s:%s",
-                        i,
-                        finding.id,
-                        finding,
-                        finding.component_name,
-                        finding.component_version,
+                        "Reimported item matches a finding that is currently open."
                     )
-                    if not (finding.mitigated and finding.is_mitigated):
+                    if item.is_mitigated:
                         logger.debug(
-                            "Reimported item matches a finding that is currently open."
+                            "Reimported mitigated item matches a finding that is currently open, closing."
                         )
-                        if item.is_mitigated:
-                            logger.debug(
-                                "Reimported mitigated item matches a finding that is currently open, closing."
-                            )
-                            # TODO: Implement a date comparison for opened defectdojo findings before closing them by reimporting, as they could be force closed by the scanner but a DD user forces it open ?
-                            logger.debug(
-                                "%i: closing: %i:%s:%s:%s",
-                                i,
-                                finding.id,
-                                finding,
-                                finding.component_name,
-                                finding.component_version,
-                            )
-                            finding.mitigated = item.mitigated
-                            finding.is_mitigated = True
-                            finding.mitigated_by = item.mitigated_by
-                            finding.active = False
-                            if verified is not None:
-                                finding.verified = verified
-                        elif item.risk_accepted or item.false_p or item.out_of_scope:
-                            logger.debug('Reimported mitigated item matches a finding that is currently open, closing.')
-                            logger.debug('%i: closing: %i:%s:%s:%s', i, finding.id, finding, finding.component_name, finding.component_version)
-                            finding.risk_accepted = item.risk_accepted
-                            finding.false_p = item.false_p
-                            finding.out_of_scope = item.out_of_scope
-                            finding.active = False
-                            if verified is not None:
-                                finding.verified = verified
-                        else:
-                            # if finding is the same but list of affected was changed, finding is marked as unchanged. This is a known issue
-                            unchanged_items.append(finding)
-                            unchanged_count += 1
+                        # TODO: Implement a date comparison for opened defectdojo findings before closing them by reimporting, as they could be force closed by the scanner but a DD user forces it open ?
+                        logger.debug(
+                            "%i: closing: %i:%s:%s:%s",
+                            i,
+                            finding.id,
+                            finding,
+                            finding.component_name,
+                            finding.component_version,
+                        )
+                        finding.mitigated = item.mitigated
+                        finding.is_mitigated = True
+                        finding.mitigated_by = item.mitigated_by
+                        finding.active = False
+                        if verified is not None:
+                            finding.verified = verified
+                    # if both scanner and defectdojo agree but finding is not closed, we don't touch it.
+                    # keeps https://github.com/DefectDojo/django-DefectDojo/pull/7447 behaviour the same
+                    elif (finding.false_p == item.false_p
+                          and finding.out_of_scope == item.out_of_scope
+                          and finding.risk_accepted == item.risk_accepted):
+                        unchanged_items.append(finding)
+                        unchanged_count += 1
+                    # If the scanner says the findings is either (risk-accepted, false positive or out of scope)
+                    # we take over these values and close the finding
+                    elif item.risk_accepted or item.false_p or item.out_of_scope:
+                        logger.debug('Reimported mitigated item matches a finding that is currently open, closing.')
+                        logger.debug('%i: closing: %i:%s:%s:%s', i, finding.id, finding, finding.component_name, finding.component_version)
+                        finding.risk_accepted = item.risk_accepted
+                        finding.false_p = item.false_p
+                        finding.out_of_scope = item.out_of_scope
+                        finding.active = False
+                        if verified is not None:
+                            finding.verified = verified
+                    else:
+                        # if finding is the same but list of affected was changed, finding is marked as unchanged. This is a known issue
+                        unchanged_items.append(finding)
+                        unchanged_count += 1
 
                     if (component_name is not None and not finding.component_name) or (
                         component_version is not None and not finding.component_version
