@@ -131,14 +131,14 @@ class DojoDefaultReImporter(object):
                         finding.component_name,
                         finding.component_version,
                     )
-                    if (
-                        finding.false_p == item.false_p
-                        and finding.out_of_scope == item.out_of_scope
-                        and finding.risk_accepted == item.risk_accepted
-                    ):
-                        unchanged_items.append(finding)
-                        unchanged_count += 1
-                        continue
+                    # if (
+                    #     finding.false_p == item.false_p
+                    #     and finding.out_of_scope == item.out_of_scope
+                    #     and finding.risk_accepted == item.risk_accepted
+                    # ):
+                    unchanged_items.append(finding)
+                    unchanged_count += 1
+                    continue
                 elif finding.is_mitigated:
                     # if the reimported item has a mitigation time, we can compare
                     if item.is_mitigated:
