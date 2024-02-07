@@ -923,6 +923,7 @@ DJANGO_MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'dojo.middleware.APITrailingSlashMiddleware',
     'dojo.middleware.DojoSytemSettingsMiddleware',
+    'dojo.middleware.HealthCheckMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
