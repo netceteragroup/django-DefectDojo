@@ -8,7 +8,7 @@ from urllib.parse import quote
 import pghistory.middleware
 from django.conf import settings
 from django.db import models
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from watson.middleware import SearchContextMiddleware
 from watson.search import search_context_manager
@@ -309,3 +309,19 @@ class AsyncSearchContextMiddleware(SearchContextMiddleware):
             for i, batch in enumerate(batches, 1):
                 logger.debug(f"AsyncSearchContextMiddleware: Triggering batch {i}/{len(batches)} for {model_name}: {len(batch)} instances")
                 dojo_dispatch_task(update_watson_search_index_for_model, model_name, batch)
+class HealthCheckMiddleware:
+    """
+    Middleware that will allow for a healthcheck to return UP without the caller being in the
+    DJANGO ALLOWED_HOSTS list. Needed for AWS ALB healthchecks and improves general k8 healthchecks
+    """
+
+    def __init__(self, get_response):
+
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.META["PATH_INFO"] == "/health":
+            return HttpResponse("UP!")
+        else:
+            response = self.get_response(request)
+            return response
