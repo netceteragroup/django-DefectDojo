@@ -7,7 +7,7 @@ from auditlog.context import set_actor
 from auditlog.middleware import AuditlogMiddleware as _AuditlogMiddleware
 from django.conf import settings
 from django.db import models
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.utils.functional import SimpleLazyObject
 
@@ -181,3 +181,21 @@ class AuditlogMiddleware(_AuditlogMiddleware):
 
         with context:
             return self.get_response(request)
+
+
+class HealthCheckMiddleware:
+    """
+    Middleware that will allow for a healthcheck to return UP without the caller being in the
+    DJANGO ALLOWED_HOSTS list. Needed for AWS ALB healthchecks and improves general k8 healthchecks
+    """
+
+    def __init__(self, get_response):
+
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if request.META["PATH_INFO"] == "/health":
+            return HttpResponse("UP!")
+        else:
+            response = self.get_response(request)
+            return response
