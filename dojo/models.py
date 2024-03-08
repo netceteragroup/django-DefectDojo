@@ -273,9 +273,11 @@ class UserContactInfo(models.Model):
 class Dojo_Group(models.Model):
     AZURE = "AzureAD"
     REMOTE = "Remote"
+    KEYCLOAK = "Keycloak"
     SOCIAL_CHOICES = (
         (AZURE, _("AzureAD")),
         (REMOTE, _("Remote")),
+        (KEYCLOAK, _("Keycloak")),
     )
     name = models.CharField(max_length=255, unique=True)
     description = models.CharField(max_length=4000, null=True, blank=True)
@@ -4053,6 +4055,28 @@ class JIRAForm_Admin(forms.ModelForm):
         return cleaned_data
 
 
+# declare form here as we can't import forms.py due to circular imports not even locally
+class JIRAForm_Admin(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput, required=True)
+
+    # django doesn't seem to have an easy way to handle password fields as PasswordInput requires reentry of passwords
+    password_from_db = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            # keep password from db to use if the user entered no password
+            self.password_from_db = self.instance.password
+            self.fields["password"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if not cleaned_data["password"]:
+            cleaned_data["password"] = self.password_from_db
+
+        return cleaned_data
+
+
 class JIRA_Instance_Admin(admin.ModelAdmin):
     form = JIRAForm_Admin
 
@@ -4101,28 +4125,6 @@ class JIRA_Project(models.Model):
         if not self.jira_instance:
             msg = "Cannot save JIRA Project Configuration without JIRA Instance"
             raise ValidationError(msg)
-
-
-# declare form here as we can't import forms.py due to circular imports not even locally
-class JIRAForm_Admin(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=True)
-
-    # django doesn't seem to have an easy way to handle password fields as PasswordInput requires reentry of passwords
-    password_from_db = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance:
-            # keep password from db to use if the user entered no password
-            self.password_from_db = self.instance.password
-            self.fields["password"].required = False
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if not cleaned_data["password"]:
-            cleaned_data["password"] = self.password_from_db
-
-        return cleaned_data
 
 
 class JIRA_Conf_Admin(admin.ModelAdmin):
