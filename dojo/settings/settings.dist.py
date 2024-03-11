@@ -535,7 +535,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.azuread_tenant.AzureADTenantOAuth2',
     'social_core.backends.gitlab.GitLabOAuth2',
     # 'social_core.backends.keycloak.KeycloakOAuth2',
-    'social_core.backends.keycloak.OpenIdConnectAuth',
+    'social_core.backends.open_id_connect.OpenIdConnectAuth',
     'social_core.backends.github_enterprise.GithubEnterpriseOAuth2',
     'dojo.remote_user.RemoteUserBackend',
     'django.contrib.auth.backends.RemoteUserBackend',
