@@ -534,7 +534,7 @@ AUTHENTICATION_BACKENDS = (
     'dojo.okta.OktaOAuth2',
     'social_core.backends.azuread_tenant.AzureADTenantOAuth2',
     'social_core.backends.gitlab.GitLabOAuth2',
-    'social_core.backends.keycloak.KeycloakOAuth2',
+    # 'social_core.backends.keycloak.KeycloakOAuth2',
     'social_core.backends.keycloak.OpenIdConnectAuth',
     'social_core.backends.github_enterprise.GithubEnterpriseOAuth2',
     'dojo.remote_user.RemoteUserBackend',
