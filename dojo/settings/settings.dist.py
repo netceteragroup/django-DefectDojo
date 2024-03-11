@@ -133,6 +133,7 @@ env = environ.FileAwareEnv(
     DD_SOCIAL_AUTH_GITLAB_API_URL=(str, 'https://gitlab.com'),
     DD_SOCIAL_AUTH_GITLAB_SCOPE=(list, ['read_user', 'openid']),
     DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_ENABLED=(bool, False),
+    DD_SOCIAL_AUTH_OIDC_OIDC_ENDPOINT=(str, ''),
     DD_SOCIAL_AUTH_KEYCLOAK_KEY=(str, ''),
     DD_SOCIAL_AUTH_KEYCLOAK_SECRET=(str, ''),
     DD_SOCIAL_AUTH_KEYCLOAK_PUBLIC_KEY=(str, ''),
