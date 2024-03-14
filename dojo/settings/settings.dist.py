@@ -572,6 +572,7 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
     'dojo.pipeline.update_azure_groups',
+    'dojo.pipeline.update_keycloak_groups',
     'dojo.pipeline.update_product_access',
 )
 

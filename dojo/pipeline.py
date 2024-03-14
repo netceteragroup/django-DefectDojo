@@ -65,6 +65,14 @@ def modify_permissions(backend, uid, user=None, social=None, *args, **kwargs):
     pass
 
 
+def update_keycloak_groups(backend, uid, user=None, social=None, *args, **kwargs):
+    if settings.KEYCLOAK_OAUTH2_ENABLED:
+        soc = user.social_auth.order_by("-created").first()
+        token = soc.extra_data['access_token']
+        print("accesstoken: " + str(token))
+        print("response raw: " + str(kwargs['response']))
+
+
 def update_azure_groups(backend, uid, user=None, social=None, *args, **kwargs):
     if settings.AZUREAD_TENANT_OAUTH2_ENABLED and settings.AZUREAD_TENANT_OAUTH2_GET_GROUPS and isinstance(backend, AzureADTenantOAuth2):
         # In some wild cases, there could be two social auth users
