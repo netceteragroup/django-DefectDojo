@@ -66,12 +66,19 @@ def modify_permissions(backend, uid, user=None, social=None, *args, **kwargs):
 
 
 def update_keycloak_groups(backend, uid, user=None, social=None, *args, **kwargs):
-    if settings.KEYCLOAK_OAUTH2_ENABLED:
+    if settings.KEYCLOAK_OAUTH2_ENABLED: #need another setting to enable syncing
         soc = user.social_auth.order_by("-created").first()
         token = soc.extra_data['access_token']
         print("accesstoken: " + str(token))
         print("response raw: " + str(kwargs['response']))
-
+        if 'groups' not in kwargs['response'] or kwargs['response']['groups'] == "":
+            logger.warning("No groups in response. Stopping to update groups of user based on azureAD")
+            return
+        group_IDs = kwargs['response']['groups'] # probably need another setting with a regex ?
+        if len(group_IDs) > 0:
+            assign_user_to_groups(user, group_IDs, 'Keycloak')
+        if settings.AZUREAD_TENANT_OAUTH2_CLEANUP_GROUPS:
+            cleanup_old_groups_for_user(user, group_IDs)
 
 def update_azure_groups(backend, uid, user=None, social=None, *args, **kwargs):
     if settings.AZUREAD_TENANT_OAUTH2_ENABLED and settings.AZUREAD_TENANT_OAUTH2_GET_GROUPS and isinstance(backend, AzureADTenantOAuth2):
