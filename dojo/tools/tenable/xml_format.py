@@ -222,10 +222,7 @@ class TenableXMLParser(object):
                     if cvss is not None:
                         severity = self.get_cvss_severity(cvss)
 
-                    vuln_id_from_tool = None
-                    vuln_id_from_tool_text = self.safely_get_element_text(item.find("pluginID"))
-                    if vuln_id_from_tool_text is not None:
-                        vuln_id_from_tool = vuln_id_from_tool_text
+                    vuln_id_from_tool = str(item.attrib.get("pluginID", ""))
 
                     # Determine the current entry has already been parsed in
                     # this report
