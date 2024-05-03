@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from dojo.models import Finding
+from dojo.models import Endpoint,Finding
 
 
 NEUVECTOR_SCAN_NAME = "NeuVector (compliance)"
@@ -35,10 +35,10 @@ def get_items(tree, test):
     # endpoints like /v1/scan/workload/{id}. otherwize, it is an export from
     # /v1/host/{id}/compliance or similar. thus, we need to support items in a
     # bit different leafs.
-    testsTree = None
+    testsTree = []
     if "report" in tree:
         testsTree = tree.get("report").get("checks", [])
-    else:
+    elif "items" in tree:
         testsTree = tree.get("items", [])
 
     for node in testsTree:
@@ -51,6 +51,23 @@ def get_items(tree, test):
         )
         unique_key = hashlib.md5(unique_key.encode("utf-8")).hexdigest()
         items[unique_key] = item
+
+    # asset-style collection with compliance issues of several assets
+    testsAssetsTree = []
+    if "compliance_issues" in tree:
+        testsAssetsTree = tree.get("compliance_issues", [])
+        for node in testsAssetsTree:
+            item = get_asset_item(node, test)
+            unique_key = (
+                node.get("name")
+                + node.get("category")
+                + node.get("type")
+                + node.get("level")
+                + node.get("profile")
+            )
+            unique_key = hashlib.md5(unique_key.encode("utf-8")).hexdigest()
+            items[unique_key] = item
+
     return list(items.values())
 
 
@@ -113,6 +130,63 @@ def get_item(node, test):
         static_finding=True,
         dynamic_finding=False,
     )
+
+    return finding
+
+
+def get_asset_item(comp_issue, test):
+    test_name = comp_issue.get("name", "unknown")
+
+    test_description = comp_issue.get("description", "").rstrip()
+
+    test_severity = comp_issue.get("level", "unknown")
+
+    mitigation = comp_issue.get("remediation", "").rstrip()
+
+    category = comp_issue.get("category", "unknown")
+
+    test_profile = comp_issue.get("profile", "unknown")
+
+    full_description = "<p>{} ({}), {}:</p>".format(
+        test_name, category, test_profile
+    )
+    full_description += "<p>{}</p>".format(test_description)
+    full_description += "<p>Audit: {}</p>".format(test_severity)
+    full_description += "<p>Mitigation:</p>"
+    full_description += "<p>  {}</p>".format(mitigation)
+
+    tags = comp_issue.get("tags", [])
+    if len(tags) > 0:
+        full_description += "<p>Applicable compliance standards: {tags}</p>".format(tags=','.join(sorted(set(tags), key=str)))
+
+    messages = comp_issue.get("message", [])
+    if len(messages) > 0:
+        full_description += "<p>Messages:</p>"
+        for m in messages:
+            full_description += "<p>  {}</p>".format(str(m).rstrip())
+
+    finding = Finding(
+        title="{name} - {desc}".format(name=test_name, desc=test_description),
+        test=test,
+        description=full_description,
+        severity=convert_severity(test_severity),
+        mitigation=mitigation,
+        vuln_id_from_tool="{category}_{name}".format(category=category, name=test_name),
+        impact="",
+        static_finding=True,
+        dynamic_finding=False,
+    )
+
+    finding.unsaved_vulnerability_ids = []
+
+    finding.unsaved_endpoints = []
+
+    nodes = comp_issue.get("nodes", [])
+    for node in nodes:
+        endpoint = Endpoint(
+            host=node.get("display_name", ""),
+        )
+        finding.unsaved_endpoints.append(endpoint)
 
     return finding
 
