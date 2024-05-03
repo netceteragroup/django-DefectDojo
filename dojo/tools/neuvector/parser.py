@@ -1,7 +1,9 @@
 import json
 import logging
 
-from dojo.models import Finding
+from datetime import datetime
+
+from dojo.models import Endpoint, Finding
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +34,7 @@ class NeuVectorJsonParser(object):
 
     def get_items(self, tree, test):
         items = {}
+        # old-style report with vulnerabilities of an endpoint
         if "report" in tree:
             vulnerabilityTree = tree.get("report").get("vulnerabilities", [])
             for node in vulnerabilityTree:
@@ -45,6 +48,17 @@ class NeuVectorJsonParser(object):
                     + str(node.get("severity"))
                 )
                 items[unique_key] = item
+        # asset-style collection with vulnerabilities of several assets
+        if "vulnerabilities" in tree:
+            vulnerabilityTree = tree.get("vulnerabilities", [])
+            for node in vulnerabilityTree:
+                item = get_asset_item(node, test)
+                unique_key = node.get("name") + str(node.get("severity"))
+                items[unique_key] = item
+
+        # asset-style collection with compliance issues of several assets
+        #if "compliance_issues" in tree:
+        #    
         return list(items.values())
 
 
@@ -112,6 +126,63 @@ def get_item(vulnerability, test):
 
     return finding
 
+def get_asset_item(vulnerability, test):
+    severity = (
+        convert_severity(vulnerability.get("severity"))
+        if "severity" in vulnerability
+        else "Info"
+    )
+
+    description = vulnerability.get("description", "")
+
+    mitigation = ""
+
+    packages = vulnerability.get("packages", {})
+    if len(packages.values()) > 0:
+        mitigation += "update the affected packages to the following:\n"
+        description += "\nThe following packages are affected:\n"
+
+        for package_name, package_version in packages.iteritems():
+            mitigation += "{name}: {version}".format(name=package_name, version=package_version)
+            description += "{name}: {version}".format(name=package_name, version=package_version)
+
+    link = vulnerability.get("link") if "link" in vulnerability else ""
+
+    vectors_v3 = vulnerability.get("vectors_v3", "")
+
+    score_v3 = vulnerability.get("score_v3", "")
+
+    published = datetime.fromtimestamp(int(vulnerability.get("published_timestamp", 0)))
+
+    vulnerability_id = vulnerability.get("name")
+
+    # create the finding object
+    finding = Finding(
+        title=vulnerability.get("name"),
+        test=test,
+        description=description,
+        severity=severity,
+        mitigation=mitigation,
+        impact="",
+        url=link,
+        cvssv3=vectors_v3,
+        cvssv3_score=score_v3,
+        publish_date=published,
+    )
+
+    if vulnerability_id:
+        finding.unsaved_vulnerability_ids = vulnerability_id
+
+    finding.unsaved_endpoints = []
+
+    nodes = vulnerability.get("nodes", [])
+    for node in nodes:
+        endpoint = Endpoint(
+            host=node.get("display_name", ""),
+        )
+        finding.unsaved_endpoints.append(endpoint)
+
+    return finding
 
 # see neuvector/share/types.go
 def convert_severity(severity):
@@ -137,7 +208,7 @@ class NeuVectorParser(object):
         return NEUVECTOR_SCAN_NAME
 
     def get_description_for_scan_types(self, scan_type):
-        return "JSON output of /v1/scan/{entity}/{id} endpoint."
+        return "JSON output of /v1/scan/{entity}/{id} endpoint (vulnerabilities of an endpoint). Or vulnerabilities of several assets (VulnerabilityAsset / ComplianceAsset)."
 
     def get_findings(self, filename, test):
         if filename is None:
