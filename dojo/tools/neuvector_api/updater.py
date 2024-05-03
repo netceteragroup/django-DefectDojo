@@ -1,7 +1,6 @@
 import logging
 import json
 
-from django.core.exceptions import ValidationError
 from dojo.tools.neuvector_api.api_client import NeuVectorAPI
 from dojo.tools.neuvector.parser import NEUVECTOR_IMAGE_SCAN_ENGAGEMENT_NAME
 from dojo.tools.neuvector.parser import NEUVECTOR_CONTAINER_SCAN_ENGAGEMENT_NAME
@@ -26,6 +25,7 @@ def determine_namespaces(finding):
         pass
     return namespaces
 
+
 def determine_images(finding):
     images = []
     if finding.test.engagement.name != NEUVECTOR_IMAGE_SCAN_ENGAGEMENT_NAME:
@@ -45,6 +45,7 @@ def determine_images(finding):
 
     return images
 
+
 def find_free_id(client):
     vps = client.get_all_vp()
     if (not vps) or (len(vps) == 0):
@@ -53,6 +54,7 @@ def find_free_id(client):
     vp_id = vps[-1]['id']
     vp_id += 1
     return vp_id
+
 
 def find_id(client, name, namespaces=[], images=[]):
     ns_set_orig = set(namespaces)
@@ -63,6 +65,7 @@ def find_id(client, name, namespaces=[], images=[]):
             if (ns_set_orig == set(vp['domains'])) and (im_set_orig == set(vp['images'])):
                 return vp['id']
     return -1
+
 
 def produce_comment(finding):
     comment = "risk accepted in DefectDojo"
