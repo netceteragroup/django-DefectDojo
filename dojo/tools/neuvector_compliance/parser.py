@@ -201,6 +201,8 @@ def convert_severity(severity):
         return "Info"
     if severity.lower() == "error":
         return "Info"
+    if severity.lower() == "manual":
+        return "Info"
     return severity.title()
 
 
