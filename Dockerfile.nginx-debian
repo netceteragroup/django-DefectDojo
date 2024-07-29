@@ -30,9 +30,10 @@ RUN \
   rm -rf /var/lib/apt/lists && \
   true
 COPY requirements.txt ./
+COPY constraints.txt ./
 # CPUCOUNT=1 is needed, otherwise the wheel for uwsgi won't always be build succesfully
 # https://github.com/unbit/uwsgi/issues/1318#issuecomment-542238096
-RUN CPUCOUNT=1 pip3 wheel --wheel-dir=/tmp/wheels -r ./requirements.txt
+RUN CPUCOUNT=1 PIP_CONSTRAINT=/app/constraints.txt pip3 wheel --wheel-dir=/tmp/wheels -r ./requirements.txt
 
 
 FROM build AS collectstatic
