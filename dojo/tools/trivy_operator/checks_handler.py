@@ -1,6 +1,13 @@
 from dojo.models import Finding
 from dojo.tools.trivy_operator.uniform_vulnid import UniformTrivyVulnID
 
+CHECK_DESCRIPTION_TEMPLATE = """{description}
+**Category**: {category}
+**Scope**: {scope}
+**Details**:
+{details}
+"""
+
 TRIVY_SEVERITIES = {
     "CRITICAL": "Critical",
     "HIGH": "High",
@@ -30,22 +37,37 @@ class TrivyChecksHandler:
                     "https://avd.aquasec.com/misconfig/kubernetes/"
                     + check_id.lower()
                 )
-            check_description = check.get("description", "")
-            check_description += "\n**container.name:** " + container_name
-            check_description += "\n**resource.kind:** " + resource_kind
-            check_description += "\n**resource.name:** " + resource_name
-            check_description += "\n**resource.namespace:** " + resource_namespace
             title = f"{check_id} - {check_title}"
+            mitigation = check.get("remediation")
+
+            details = ""
+            for message in check.get("messages"):
+                details += f"{message}\n"
+
+            scope = "undefined"
+            if check.get("scope"):
+                scope_type = check.get("scope").get("type")
+                scope_value = check.get("scope").get("value")
+                scope = f"{scope_type} {scope_value}"
+
+            description = CHECK_DESCRIPTION_TEMPLATE.format(
+                category=check.get("category"),
+                description=check.get("description"),
+                details=details,
+                scope=scope
+            )
+
             finding = Finding(
                 test=test,
                 title=title,
                 severity=check_severity,
                 references=check_references,
-                description=check_description,
+                description=description,
                 static_finding=True,
                 dynamic_finding=False,
                 service=service,
                 fix_available=True,
+                mitigation=mitigation,
             )
             if resource_namespace:
                 finding.unsaved_tags = [resource_namespace]
