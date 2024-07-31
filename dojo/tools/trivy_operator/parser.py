@@ -31,11 +31,13 @@ class TrivyOperatorParser:
         if data is None:
             return []
 
+        findings = []
         if isinstance(data, dict):
-            self.handle_resource(data, test)
+            findings = self.handle_resource(data, test)
         else:
             for resource in data:
-                self.handle_resource(resource, test)
+                findings += self.handle_resource(resource, test)
+        return findings
 
     def handle_resource(self, data, test):
         metadata = data.get("metadata", None)
