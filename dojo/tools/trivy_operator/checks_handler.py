@@ -11,7 +11,7 @@ TRIVY_SEVERITIES = {
 
 
 class TrivyChecksHandler:
-    def handle_checks(self, labels, checks, test):
+    def handle_checks(self, labels, endpoint, service, checks, test):
         findings = []
         resource_namespace = labels.get("trivy-operator.resource.namespace", "")
         resource_kind = labels.get("trivy-operator.resource.kind", "")
@@ -51,5 +51,6 @@ class TrivyChecksHandler:
                 finding.unsaved_tags = [resource_namespace]
             if check_id:
                 finding.unsaved_vulnerability_ids = [UniformTrivyVulnID().return_uniformed_vulnid(check_id)]
+            finding.unsaved_endpoints.append(endpoint)
             findings.append(finding)
         return findings
