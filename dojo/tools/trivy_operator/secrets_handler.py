@@ -11,19 +11,13 @@ TRIVY_SEVERITIES = {
 SECRET_DESCRIPTION_TEMPLATE = """{title}
 **Category:** {category}
 **Match:** {match}
+**ruleID:** {ruleID}
 """  # noqa: S105
 
 
 class TrivySecretsHandler:
-    def handle_secrets(self, labels, secrets, test):
+    def handle_secrets(self, labels, endpoints, service, secrets, test):
         findings = []
-        resource_namespace = labels.get("trivy-operator.resource.namespace", "")
-        resource_kind = labels.get("trivy-operator.resource.kind", "")
-        resource_name = labels.get("trivy-operator.resource.name", "")
-        container_name = labels.get("trivy-operator.container.name", "")
-        service = f"{resource_namespace}/{resource_kind}/{resource_name}"
-        if container_name:
-            service = f"{service}/{container_name}"
         for secret in secrets:
             secret_title = secret.get("title")
             secret_category = secret.get("category")
@@ -37,12 +31,8 @@ class TrivySecretsHandler:
                 title=secret_title,
                 category=secret_category,
                 match=secret_match,
+                ruleID=secret_rule_id,
             )
-            secret_description += "\n**container.name:** " + container_name
-            secret_description += "\n**resource.kind:** " + resource_kind
-            secret_description += "\n**resource.name:** " + resource_name
-            secret_description += "\n**resource.namespace:** " + resource_namespace
-            secret_description += "\n**ruleID:** " + secret_rule_id
             finding = Finding(
                 test=test,
                 title=title,
@@ -55,7 +45,8 @@ class TrivySecretsHandler:
                 service=service,
                 fix_available=True,
             )
-            if resource_namespace:
-                finding.unsaved_tags = [resource_namespace]
+            if secret_rule_id:
+                finding.unsaved_vulnerability_ids = [secret_rule_id]
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings
