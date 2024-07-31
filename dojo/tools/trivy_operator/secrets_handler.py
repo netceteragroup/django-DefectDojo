@@ -15,7 +15,7 @@ SECRET_DESCRIPTION_TEMPLATE = """{title}
 
 
 class TrivySecretsHandler:
-    def handle_secrets(self, labels, secrets, test):
+    def handle_secrets(self, labels, endpoint, service, secrets, test):
         findings = []
         resource_namespace = labels.get("trivy-operator.resource.namespace", "")
         resource_kind = labels.get("trivy-operator.resource.kind", "")
@@ -57,5 +57,8 @@ class TrivySecretsHandler:
             )
             if resource_namespace != "":
                 finding.tags = resource_namespace
+            if secret_rule_id:
+                finding.unsaved_vulnerability_ids = [secret_rule_id]
+            finding.unsaved_endpoints.append(endpoint)
             findings.append(finding)
         return findings
