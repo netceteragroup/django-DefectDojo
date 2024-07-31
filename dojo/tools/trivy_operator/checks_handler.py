@@ -37,11 +37,11 @@ class TrivyChecksHandler:
             for message in check.get("messages"):
                 details += f"{message}\n"
 
-            scope = ""
+            scope = "undefined"
             if check.get("scope"):
                 scope_type = check.get("scope").get("type")
                 scope_value = check.get("scope").get("value")
-                scope=f"{scope_type} {scope_value}"
+                scope = f"{scope_type} {scope_value}"
 
             description = CHECK_DESCRIPTION_TEMPLATE.format(
                 category=check.get("category"),
