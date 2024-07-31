@@ -7,6 +7,8 @@ from dojo.tools.trivy_operator.compliance_handler import TrivyComplianceHandler
 from dojo.tools.trivy_operator.secrets_handler import TrivySecretsHandler
 from dojo.tools.trivy_operator.vulnerability_handler import TrivyVulnerabilityHandler
 
+from dojo.models import Endpoint
+
 
 class TrivyOperatorParser:
     def get_scan_types(self):
@@ -56,18 +58,23 @@ class TrivyOperatorParser:
             resource_kind = labels.get("trivy-operator.resource.kind", "")
             resource_name = labels.get("trivy-operator.resource.name", "")
             container_name = labels.get("trivy-operator.container.name", "")
-            service = f"{resource_namespace}/{resource_kind}/{resource_name}"
-            if container_name != "":
-                service = f"{service}/{container_name}"
+
+            endpoint = Endpoint(
+                host=resource_namespace,
+                path=f"{resource_kind}/{resource_name}/{container_name}"
+            )
+
+            service = ""
+
             vulnerabilities = report.get("vulnerabilities", None)
             if vulnerabilities is not None:
-                findings += TrivyVulnerabilityHandler().handle_vulns(service, vulnerabilities, test)
+                findings += TrivyVulnerabilityHandler().handle_vulns(endpoint, service, vulnerabilities, test)
             checks = report.get("checks", None)
             if checks is not None:
-                findings += TrivyChecksHandler().handle_checks(service, checks, test)
+                findings += TrivyChecksHandler().handle_checks(endpoint, service, checks, test)
             secrets = report.get("secrets", None)
             if secrets is not None:
-                findings += TrivySecretsHandler().handle_secrets(service, secrets, test)
+                findings += TrivySecretsHandler().handle_secrets(endpoint, service, secrets, test)
         elif benchmarkreport is not None:
             findings += TrivyComplianceHandler().handle_compliance(benchmarkreport, test)
         return findings
