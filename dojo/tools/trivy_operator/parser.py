@@ -61,9 +61,18 @@ class TrivyOperatorParser:
             resource_name = labels.get("trivy-operator.resource.name", "")
             container_name = labels.get("trivy-operator.container.name", "")
 
+            image = "unknown_image"
+            if report.get("registry"):
+                registry = report.get("registry").get("server", "unknown_server")
+                if report.get("artifact"):
+                    artifact = report.get("artifact")
+                    repository = artifact.get("repository", "unknown_repo")
+                    tag = artifact.get("tag", "unknown_tag")
+                    image = f"{registry}/{repository}:{tag}"
+
             endpoint = Endpoint(
-                host=resource_namespace,
-                path=f"{resource_kind}/{resource_name}/{container_name}"
+                host=image,
+                path=f"{resource_namespace}/{resource_kind}/{resource_name}/{container_name}"
             )
 
             service = ""
