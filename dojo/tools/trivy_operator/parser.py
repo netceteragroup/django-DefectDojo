@@ -30,6 +30,16 @@ class TrivyOperatorParser:
 
         if data is None:
             return []
+
+        findings = []
+        if isinstance(data, dict):
+            findings = self.handle_resource(data, test)
+        else:
+            for resource in data:
+                findings += self.handle_resource(resource, test)
+        return findings
+
+    def handle_resource(self, data, test):
         metadata = data.get("metadata", None)
         if metadata is None:
             return []
