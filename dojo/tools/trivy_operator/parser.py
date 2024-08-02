@@ -68,10 +68,29 @@ class TrivyOperatorParser:
             resource_name = labels.get("trivy-operator.resource.name", "")
             container_name = labels.get("trivy-operator.container.name", "")
 
-            endpoint = Endpoint(
+            endpoints = []
+            endpoints.append(Endpoint(
                 host=resource_namespace,
                 path=f"{resource_kind}/{resource_name}/{container_name}"
-            )
+            ))
+
+            if report.get("registry"):
+                if report.get("artifact"):
+                    registry = report.get("registry").get("server", "unknown_registry")
+                    artifact = report.get("artifact")
+                    repository = artifact.get("repository", "unknown_repo")
+                    tag = artifact.get("tag", "")
+                    if tag == "":
+                        tag = artifact.get("digest", "unknown_tag")
+                    # having full path to an image (forward slashes) and a tag
+                    # after colon as 'host' property of Endpoint makes an
+                    # endpoint broken, although, this is a desired value. Thus,
+                    # we abuse 'path' field for that.
+                    artifact_name = repository.split("/")[-1]
+                    endpoints.append(Endpoint(
+                        host=f"{artifact_name}",
+                        path=f"{registry}/{repository}:{tag}"
+                    ))
 
             service = ""
 
