@@ -15,7 +15,7 @@ SECRET_DESCRIPTION_TEMPLATE = """{title}
 
 
 class TrivySecretsHandler:
-    def handle_secrets(self, endpoint, service, secrets, test):
+    def handle_secrets(self, endpoints, service, secrets, test):
         findings = []
         for secret in secrets:
             secret_title = secret.get("title")
@@ -45,6 +45,6 @@ class TrivySecretsHandler:
             )
             if secret_rule_id:
                 finding.unsaved_vulnerability_ids = [secret_rule_id]
-            finding.unsaved_endpoints.append(endpoint)
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings
