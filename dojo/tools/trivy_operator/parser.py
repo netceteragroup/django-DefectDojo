@@ -61,9 +61,21 @@ class TrivyOperatorParser:
             resource_name = labels.get("trivy-operator.resource.name", "")
             container_name = labels.get("trivy-operator.container.name", "")
 
+            affected_artifact = "unknown_artifact"
+            if report.get("registry"):
+                registry = report.get("registry").get("server", "unknown_registry")
+                if report.get("artifact"):
+                    artifact = report.get("artifact")
+                    repository = artifact.get("repository", "unknown_repo")
+                    tag = artifact.get("tag", "unknown_tag")
+                    # having tag after colon as 'host' property of Endpoint
+                    # makes an endpoint broken. however, there is no better
+                    # option at the moment to keep the information.
+                    affected_artifact = f"{registry}/{repository}:{tag}"
+
             endpoint = Endpoint(
-                host=resource_namespace,
-                path=f"{resource_kind}/{resource_name}/{container_name}"
+                host=affected_artifact,
+                path=f"{resource_namespace}/{resource_kind}/{resource_name}/{container_name}"
             )
 
             service = ""
