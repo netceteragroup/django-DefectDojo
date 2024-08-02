@@ -17,7 +17,7 @@ TRIVY_SEVERITIES = {
 
 
 class TrivyChecksHandler:
-    def handle_checks(self, endpoint, service, checks, test):
+    def handle_checks(self, endpoints, service, checks, test):
         findings = []
         for check in checks:
             check_title = check.get("title")
@@ -62,6 +62,6 @@ class TrivyChecksHandler:
             )
             if check_id:
                 finding.unsaved_vulnerability_ids = [check_id]
-            finding.unsaved_endpoints.append(endpoint)
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings
