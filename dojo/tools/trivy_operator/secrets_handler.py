@@ -45,6 +45,6 @@ class TrivySecretsHandler:
             )
             if secret_rule_id:
                 finding.unsaved_vulnerability_ids = [secret_rule_id]
-            finding.unsaved_endpoints.append(endpoints)
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings

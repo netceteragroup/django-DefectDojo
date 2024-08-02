@@ -62,6 +62,6 @@ class TrivyChecksHandler:
             )
             if check_id:
                 finding.unsaved_vulnerability_ids = [check_id]
-            finding.unsaved_endpoints.append(endpoints)
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings
