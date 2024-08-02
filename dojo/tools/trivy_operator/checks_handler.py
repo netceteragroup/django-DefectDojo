@@ -73,6 +73,6 @@ class TrivyChecksHandler:
                 finding.unsaved_tags = [resource_namespace]
             if check_id:
                 finding.unsaved_vulnerability_ids = [UniformTrivyVulnID().return_uniformed_vulnid(check_id)]
-            finding.unsaved_endpoints.append(endpoint)
+            finding.unsaved_endpoints += endpoints
             findings.append(finding)
         return findings
