@@ -62,10 +62,11 @@ class TrivyOperatorParser:
             container_name = labels.get("trivy-operator.container.name", "")
 
             endpoints = []
-            endpoints += Endpoint(
+            resource_endpoint = Endpoint(
                 host=resource_namespace,
                 path=f"{resource_kind}/{resource_name}/{container_name}"
             )
+            endpoints += resource_endpoint
 
             if report.get("registry"):
                 if report.get("artifact"):
@@ -78,10 +79,11 @@ class TrivyOperatorParser:
                     # endpoint broken, although, this is a desired value. Thus,
                     # we abuse 'path' field for that.
                     artifact_name = repository.split("/")[-1]
-                    endpoints += Endpoint(
+                    artifact_endpoint = Endpoint(
                         host=f"{artifact_name}",
                         path=f"{registry}/{repository}:{tag}"
                     )
+                    endpoints += artifact_endpoint
 
             service = ""
 
