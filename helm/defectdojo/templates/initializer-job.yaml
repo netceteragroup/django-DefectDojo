@@ -77,6 +77,8 @@ spec:
         - secretRef:
             name: {{ $fullName }}
             optional: true
+        resources:
+          {{- toYaml .Values.initializer.resources | nindent 10 }}
       containers:
       {{- if .Values.cloudsql.enabled  }}
       - name: cloudsql-proxy
