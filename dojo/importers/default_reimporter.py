@@ -474,7 +474,7 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         # (Risk accepted findings are not set to mitigated by Defectdojo)
         # We however do not exit the loop as we do want to update the endpoints (in case some endpoints were fixed)
         elif existing_finding.risk_accepted and not existing_finding.active:
-            unchanged_items.append(existing_finding)
+            self.unchanged_items.append(existing_finding)
             return existing_finding, False
         # The finding was not an exact match, so we need to add more details about from the
         # new finding to the existing. Return False here to make process further
