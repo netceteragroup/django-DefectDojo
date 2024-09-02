@@ -194,10 +194,13 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
             unsaved_finding.hash_code = self.calculate_unsaved_finding_hash_code(unsaved_finding)
             deduplicationLogger.debug(f"unsaved finding's hash_code: {unsaved_finding.hash_code}")
             # Match any findings to this new one coming in
-            matched_findings = self.match_new_finding_to_existing_finding(unsaved_finding)
-            deduplicationLogger.debug(f"found {len(matched_findings)} findings matching with current new finding")
+            matched_findings = self.match_new_finding_to_existing_finding_nonduplicate(unsaved_finding)
+            deduplicationLogger.debug(f"found {len(matched_findings)} original (non-duplicate) findings matching with current new finding")
             # Determine how to proceed based on whether matches were found or not
             if matched_findings:
+                # We take the first finding because we expect only one actually
+                # (if any). If there are more than one finding, this should not
+                # happen and indicates inconsistency.
                 existing_finding = matched_findings[0]
                 finding, force_continue = self.process_matched_finding(
                     unsaved_finding,
@@ -419,6 +422,26 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         else:
             logger.error(f'Internal error: unexpected deduplication_algorithm: "{self.deduplication_algorithm}"')
             return None
+
+    def match_new_finding_to_existing_finding_nonduplicate(
+        self,
+        unsaved_finding: Finding,
+    ) -> List[Finding]:
+        """
+        Matches a single new finding to N existing findings and then returns those
+        matches, but only those which are not 'duplicate'. This normally should end
+        up in a single finding. In case it returns more than one, it means that the
+        internal state is inconsistent and hardly usable.
+        """
+        non_duplicate_findings = []
+        # we could do the same by proper database query, but it would lead to
+        # large chunk of copy-pasted code
+        matched_findings = self.match_new_finding_to_existing_finding(unsaved_finding)
+        for finding in matched_findings:
+            if not finding.duplicate:
+                non_duplicate_findings.append(finding)
+
+        return non_duplicate_findings
 
     def process_matched_finding(
         self,
