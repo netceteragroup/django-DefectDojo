@@ -501,6 +501,9 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         # (Risk accepted findings are not set to mitigated by Defectdojo)
         # We however do not exit the loop as we do want to update the endpoints (in case some endpoints were fixed)
         if existing_finding.risk_accepted and not existing_finding.active:
+            # some properties of the remaining active finding (existing) should be
+            # updated from the newly arrived one
+            self.update_finding_mutable_properties(existing_finding, unsaved_finding)
             self.unchanged_items.append(existing_finding)
             return existing_finding, False
         # The finding was not an exact match, so we need to add more details about from the
@@ -580,13 +583,9 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         if self.verified is not None:
             existing_finding.verified = self.verified
 
-        component_name = getattr(unsaved_finding, "component_name", None)
-        component_version = getattr(unsaved_finding, "component_version", None)
-        existing_finding.component_name = existing_finding.component_name or component_name
-        existing_finding.component_version = existing_finding.component_version or component_version
-        existing_finding.save(dedupe_option=False)
-        # don't dedupe before endpoints are added
-        existing_finding.save(dedupe_option=False)
+        # some properties of the remaining active finding (existing) should be
+        # updated from the newly arrived one
+        self.update_finding_mutable_properties(existing_finding, unsaved_finding)
         note = Notes(entry=f"Re-activated by {self.scan_type} re-upload.", author=self.user)
         note.save()
         endpoint_statuses = existing_finding.status_finding.exclude(
@@ -649,18 +648,38 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
             else:
                 # if finding is the same but list of affected was changed, finding is marked as unchanged. This is a known issue
                 self.unchanged_items.append(existing_finding)
+        # some properties of the remaining active finding (existing) should be
+        # updated from the newly arrived one
+        self.update_finding_mutable_properties(existing_finding, unsaved_finding)
+        # Return False here to make sure further processing happens
+        return existing_finding, False
+
+    def update_finding_mutable_properties(
+        self,
+        existing_finding: Finding,
+        new_finding: Finding,
+    ) -> None:
+        """
+        This updates "static" properties of the existing finding from the new one.
+        Example: component, description. These should be properties which are not
+        used to "hashcode" calculation.
+        """
         # Set the component name and version on the existing finding if it is present
         # on the old finding, but not present on the existing finding (do not override)
-        component_name = getattr(unsaved_finding, "component_name", None)
-        component_version = getattr(unsaved_finding, "component_version", None)
+        component_name = getattr(new_finding, "component_name", None)
+        component_version = getattr(new_finding, "component_version", None)
         if (component_name is not None and not existing_finding.component_name) or (
             component_version is not None and not existing_finding.component_version
         ):
             existing_finding.component_name = existing_finding.component_name or component_name
             existing_finding.component_version = existing_finding.component_version or component_version
-            existing_finding.save(dedupe_option=False)
-        # Return False here to make sure further processing happens
-        return existing_finding, False
+        # set description of the existing finding to be the same of the new
+        # finding. this way we make sure that there is no discrepancy
+        # introduced for the test cases which make description dynamic, from
+        # the affected endpoints. whereas the list of affected endpoints can
+        # differ if the finding is in process of remediation.
+        existing_finding.description = getattr(new_finding, "description", None)
+        existing_finding.save(dedupe_option=False)
 
     def process_finding_that_was_not_matched(
         self,
