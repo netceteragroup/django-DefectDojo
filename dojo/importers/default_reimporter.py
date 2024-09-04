@@ -194,10 +194,13 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
             unsaved_finding.hash_code = self.calculate_unsaved_finding_hash_code(unsaved_finding)
             deduplicationLogger.debug(f"unsaved finding's hash_code: {unsaved_finding.hash_code}")
             # Match any findings to this new one coming in
-            matched_findings = self.match_new_finding_to_existing_finding(unsaved_finding)
-            deduplicationLogger.debug(f"found {len(matched_findings)} findings matching with current new finding")
+            matched_findings = self.match_new_finding_to_existing_finding_nonduplicate(unsaved_finding)
+            deduplicationLogger.debug(f"found {len(matched_findings)} original (non-duplicate) findings matching with current new finding")
             # Determine how to proceed based on whether matches were found or not
             if matched_findings:
+                # We take the first finding because we expect only one actually
+                # (if any). If there are more than one finding, this should not
+                # happen and indicates inconsistency.
                 existing_finding = matched_findings[0]
                 finding, force_continue = self.process_matched_finding(
                     unsaved_finding,
@@ -420,6 +423,26 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
             logger.error(f'Internal error: unexpected deduplication_algorithm: "{self.deduplication_algorithm}"')
             return None
 
+    def match_new_finding_to_existing_finding_nonduplicate(
+        self,
+        unsaved_finding: Finding,
+    ) -> List[Finding]:
+        """
+        Matches a single new finding to N existing findings and then returns those
+        matches, but only those which are not 'duplicate'. This normally should end
+        up in a single finding. In case it returns more than one, it means that the
+        internal state is inconsistent and hardly usable.
+        """
+        non_duplicate_findings = []
+        # we could do the same by proper database query, but it would lead to
+        # large chunk of copy-pasted code
+        matched_findings = self.match_new_finding_to_existing_finding(unsaved_finding)
+        for finding in matched_findings:
+            if not finding.duplicate:
+                non_duplicate_findings.append(finding)
+
+        return non_duplicate_findings
+
     def process_matched_finding(
         self,
         unsaved_finding: Finding,
@@ -474,6 +497,9 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
         # (Risk accepted findings are not set to mitigated by Defectdojo)
         # We however do not exit the loop as we do want to update the endpoints (in case some endpoints were fixed)
         elif existing_finding.risk_accepted and not existing_finding.active:
+            # some properties of the remaining active finding (existing) should be
+            # updated from the newly arrived one
+            self.update_finding_mutable_properties(existing_finding, unsaved_finding)
             self.unchanged_items.append(existing_finding)
             return existing_finding, False
         # The finding was not an exact match, so we need to add more details about from the
@@ -556,13 +582,9 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
                 if self.verified is not None:
                     existing_finding.verified = self.verified
 
-        component_name = getattr(unsaved_finding, "component_name", None)
-        component_version = getattr(unsaved_finding, "component_version", None)
-        existing_finding.component_name = existing_finding.component_name or component_name
-        existing_finding.component_version = existing_finding.component_version or component_version
-        existing_finding.save(dedupe_option=False)
-        # don't dedupe before endpoints are added
-        existing_finding.save(dedupe_option=False)
+        # some properties of the remaining active finding (existing) should be
+        # updated from the newly arrived one
+        self.update_finding_mutable_properties(existing_finding, unsaved_finding)
         note = Notes(entry=f"Re-activated by {self.scan_type} re-upload.", author=self.user)
         note.save()
         endpoint_statuses = existing_finding.status_finding.exclude(
@@ -625,18 +647,38 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
             else:
                 # if finding is the same but list of affected was changed, finding is marked as unchanged. This is a known issue
                 self.unchanged_items.append(existing_finding)
+        # some properties of the remaining active finding (existing) should be
+        # updated from the newly arrived one
+        self.update_finding_mutable_properties(existing_finding, unsaved_finding)
+        # Return False here to make sure further processing happens
+        return existing_finding, False
+
+    def update_finding_mutable_properties(
+        self,
+        existing_finding: Finding,
+        new_finding: Finding,
+    ) -> None:
+        """
+        This updates "static" properties of the existing finding from the new one.
+        Example: component, description. These should be properties which are not
+        used to "hashcode" calculation.
+        """
         # Set the component name and version on the existing finding if it is present
         # on the old finding, but not present on the existing finding (do not override)
-        component_name = getattr(unsaved_finding, "component_name", None)
-        component_version = getattr(unsaved_finding, "component_version", None)
+        component_name = getattr(new_finding, "component_name", None)
+        component_version = getattr(new_finding, "component_version", None)
         if (component_name is not None and not existing_finding.component_name) or (
             component_version is not None and not existing_finding.component_version
         ):
             existing_finding.component_name = existing_finding.component_name or component_name
             existing_finding.component_version = existing_finding.component_version or component_version
-            existing_finding.save(dedupe_option=False)
-        # Return False here to make sure further processing happens
-        return existing_finding, False
+        # set description of the existing finding to be the same of the new
+        # finding. this way we make sure that there is no discrepancy
+        # introduced for the test cases which make description dynamic, from
+        # the affected endpoints. whereas the list of affected endpoints can
+        # differ if the finding is in process of remediation.
+        existing_finding.description = getattr(new_finding, "description", None)
+        existing_finding.save(dedupe_option=False)
 
     def process_finding_that_was_not_matched(
         self,
