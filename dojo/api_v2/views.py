@@ -2794,8 +2794,9 @@ class BurpRawRequestResponseViewSet(
 
 # Authorization: superuser
 class NotesViewSet(
-    mixins.UpdateModelMixin,
-    viewsets.ReadOnlyModelViewSet,
+    # mixins.UpdateModelMixin,
+    # viewsets.ReadOnlyModelViewSet,
+    PrefetchDojoModelViewSet,
 ):
     serializer_class = serializers.NoteSerializer
     queryset = Notes.objects.none()
