@@ -96,6 +96,8 @@ jobs:
       - name: login to Docker repository
         run: |
           nslookup docker-registry-internal.extranet.netcetera.biz
+          sudo systemctl status systemd-networkd
+          sudo systemctl status systemd-resolved
           echo "${{ secrets.NCA_REPO_PASSWORD }}" | docker login "${{ env.DD_REGISTRY }}" -u "${{ secrets.NCA_REPO_USERNAME }}" --password-stdin
 
       - name: setup Docker buildx
