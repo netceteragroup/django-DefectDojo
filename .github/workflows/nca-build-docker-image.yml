@@ -93,10 +93,15 @@ jobs:
       - name: checkout the repo
         uses: actions/checkout@v4
 
+      - name: Set 8.8.8.8 as dns server
+        run: |
+          sudo sed -i 's/#DNS=/DNS=8.8.8.8 8.8.4.4/g' /etc/systemd/resolved.conf
+          sudo systemctl daemon-reload
+          sudo systemctl restart systemd-networkd
+          sudo systemctl restart systemd-resolved
+
       - name: login to Docker repository
         run: |
-          sudo systemctl status systemd-networkd
-          sudo systemctl status systemd-resolved
           nslookup docker-registry-internal.extranet.netcetera.biz
           echo "${{ secrets.NCA_REPO_PASSWORD }}" | docker login "${{ env.DD_REGISTRY }}" -u "${{ secrets.NCA_REPO_USERNAME }}" --password-stdin
 
