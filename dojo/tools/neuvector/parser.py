@@ -122,6 +122,17 @@ def get_item(vulnerability, test):
     return finding
 
 
+ASSET_FINDING_DESCRIPTION_TEMPLATE = """**Title:** {title}
+**Details:**
+{description}
+**Feed rating:** {feed_rating}
+**Published on**: {published_date}
+**Reference**: {reference}
+**Affected packages:**
+{affected packages}
+"""
+
+
 def get_asset_item(vulnerability, test):
     severity = (
         convert_severity(vulnerability.get("severity"))
@@ -129,65 +140,51 @@ def get_asset_item(vulnerability, test):
         else "Info"
     )
 
-    feed_rating = vulnerability.get("feed_rating", "")
+    vulnerability_id = vulnerability.get("name")
 
-    description = vulnerability.get("description", "").strip()
-
-    if len(feed_rating) > 0:
-        description += "<p>Rating from vendor: {rating}</p>".format(rating=feed_rating)
-
-    mitigation = ""
-
-    package_names = []
-
-    packages = vulnerability.get("packages", {})
-    if len(packages.values()) > 0:
-        mitigation += "<p>update the affected packages to the following versions:</p>"
-        description += "<p>The following packages are affected:</p>"
-
-        for package_name, package_versions in packages.items():
-            package_names.append(package_name.split('/')[0])
-
-            mitigation += "<p>{name}:</p>".format(name=package_name)
-
-            description += "<p>{name}:</p>".format(name=package_name)
-            for versions in package_versions:
-                mitigation += "<p>  {fixed}</p>".format(fixed=versions.get("fixed_version", "unknown"))
-
-                description += "<p>  installed version: {installed}</p>".format(installed=versions.get("package_version", "unknown"))
-                description += "<p>  fixed version: {fixed}</p>".format(fixed=versions.get("fixed_version", "unknown"))
-
-    link = vulnerability.get("link") if "link" in vulnerability else ""
-
-    vectors_v3 = vulnerability.get("vectors_v3", "")
-
-    score_v3 = vulnerability.get("score_v3", "")
+    vuln_description = vulnerability.get("description", "").strip()
 
     published_date = None
     published_ts = vulnerability.get("published_timestamp", 0)
     if published_ts > 0:
         published_date = datetime.fromtimestamp(int(published_ts))
 
-    vulnerability_id = vulnerability.get("name")
+    reference = vulnerability.get("link", "not provided")
 
-    # there is nothing like short description, short name or title
-    package_names_combined = ','.join(sorted(set(package_names), key=str))
-    if len(package_names_combined) > 32:
-        package_names_combined = package_names_combined[-32:]
+    affected_packages = ""
 
-    title = "{packages}: ({vuln})".format(packages=package_names_combined, vuln=vulnerability.get("name").upper())
+    packages = vulnerability.get("packages", {})
+    if len(packages.values()) > 0:
+        for package_name, package_versions in packages.items():
+            affected_packages += f"*{package_name}*\n"
+
+            for versions in package_versions:
+                installed=versions.get("package_version", "unknown")
+                fixed=versions.get("fixed_version", "unknown")
+                affected_packages += f"  installed version: {installed}\n"
+                affected_packages += f"  fixed version: {fixed}\n"
+
+            affected_packages += "\n"
+
+    description = ASSET_FINDING_DESCRIPTION_TEMPLATE.format(
+        title=vulnerability_id,
+        description=vuln_description,
+        feed_rating=vulnerability.get("feed_rating", "not provided"),
+        published_date=published_date,
+        reference=reference,
+        affected_packages=affected_packages,
+    )
 
     # create the finding object
     finding = Finding(
-        title=title,
+        title=vulnerability_id,
         test=test,
         description=description,
         severity=severity,
-        mitigation=mitigation,
         impact="",
-        url=link,
-        cvssv3=vectors_v3,
-        cvssv3_score=score_v3,
+        url=reference,
+        cvssv3=vulnerability.get("vectors_v3", ""),
+        cvssv3_score=vulnerability.get("score_v3", ""),
         publish_date=published_date,
     )
 
@@ -196,14 +193,48 @@ def get_asset_item(vulnerability, test):
     finding.unsaved_endpoints = []
 
     nodes = vulnerability.get("nodes", [])
-    for node in nodes:
-        endpoint = Endpoint(
-            host=node.get("display_name", ""),
-        )
+    for asset in nodes:
+        endpoint = endpoint_from_asset("node", asset)
+        finding.unsaved_endpoints.append(endpoint)
+
+    workloads = vulnerability.get("workloads", [])
+    for asset in workloads:
+        endpoint = endpoint_from_asset("workload", asset)
+        finding.unsaved_endpoints.append(endpoint)
+
+    images = vulnerability.get("images", [])
+    for asset in images:
+        endpoint = endpoint_from_asset("image", asset)
+        finding.unsaved_endpoints.append(endpoint)
+
+    platforms = vulnerability.get("platforms", [])
+    for asset in platforms:
+        endpoint = endpoint_from_asset("platform", asset)
         finding.unsaved_endpoints.append(endpoint)
 
     return finding
 
+
+def endpoint_from_asset(kind, asset):
+    # usually, there is only one namespace (domain, as NeuVector name it)
+    namespaces = asset.get("domains", [])
+
+    name = asset.get("display_name", "")
+
+    if kind == "workload":
+        service = asset.get("service", "unknown_service")
+        image = asset.get("image", "unknown_image")
+        name += f"/{service}/{image}"
+
+    endpoint = Endpoint(
+        # host needs to comply with domain name syntax, we just expect that
+        # there will be only one namespace
+        host='-'.join(namespaces),
+        # we abuse path to have as much details as possible
+        path=f"{kind}/{name}"
+    )
+
+    return endpoint
 
 # see neuvector/share/types.go
 def convert_severity(severity):
