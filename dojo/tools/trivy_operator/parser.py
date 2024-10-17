@@ -70,7 +70,9 @@ class TrivyOperatorParser:
                     registry = report.get("registry").get("server", "unknown_registry")
                     artifact = report.get("artifact")
                     repository = artifact.get("repository", "unknown_repo")
-                    tag = artifact.get("tag", "unknown_tag")
+                    tag = artifact.get("tag", "")
+                    if tag == "":
+                        tag = artifact.get("digest", "unknown_tag")
                     # having full path to an image (forward slashes) and a tag
                     # after colon as 'host' property of Endpoint makes an
                     # endpoint broken, although, this is a desired value. Thus,
