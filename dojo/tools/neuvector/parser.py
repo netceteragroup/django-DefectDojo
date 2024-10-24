@@ -1,5 +1,6 @@
 import json
 import logging
+import textwrap
 
 from datetime import datetime
 
@@ -122,7 +123,7 @@ def get_item(vulnerability, test):
     return finding
 
 
-ASSET_FINDING_DESCRIPTION_TEMPLATE = """**Title:** {title}
+ASSET_FINDING_DESCRIPTION_TEMPLATE = """**Name:** {name}
 **Details:**
 {description}
 **Feed rating:** {feed_rating}
@@ -142,7 +143,8 @@ def get_asset_item(vulnerability, test):
         else "Info"
     )
 
-    vulnerability_id = vulnerability.get("name")
+    # usually it is CVE-XXXX-YYYY
+    vuln_name = vulnerability.get("name")
 
     vuln_description = vulnerability.get("description", "").strip()
 
@@ -155,9 +157,31 @@ def get_asset_item(vulnerability, test):
 
     affected_packages = ""
 
+    # will be used to form finding title
+    package_names = []
+
     packages = vulnerability.get("packages", {})
     if len(packages.values()) > 0:
         for package_name, package_versions in packages.items():
+            shortened_pkgname = package_name
+
+            if package_name.startswith("go:"):
+                # go:github.com/aws/aws-sdk-go --> github.com/aws/aws-sdk-go
+                shortened_pkgname = shortened_pkgname.split("go:")[-1]
+            elif package_name.startswith("perl/"):
+                # perl/perl-base --> perl-base
+                shortened_pkgname = shortened_pkgname.split("perl/")[-1]
+            elif package_name.startswith("python"):
+                # python:setuptools --> setuptools
+                shortened_pkgname = shortened_pkgname.split("python:")[-1]
+            else:
+                # openssl/libssl3 --> openssl
+                shortened_pkgname = shortened_pkgname.split('/')[0]
+                # commons-io:commons-io --> commons-io
+                shortened_pkgname = shortened_pkgname.split(':')[-1]
+
+            package_names.append(shortened_pkgname)
+
             affected_packages += f"*{package_name}*\n"
 
             for versions in package_versions:
@@ -167,6 +191,13 @@ def get_asset_item(vulnerability, test):
                 affected_packages += f"  fixed version: {fixed}\n"
 
             affected_packages += "\n"
+
+    # there is nothing like short description, short name or title. thus, to
+    # form a finding title we take its name (i.e. CVE) and combined with
+    # minimized list of the affected packages
+    package_names_combined = ','.join(sorted(set(package_names), key=str))
+    title_suffix = textwrap.shorten(package_names_combined, width=32, placeholder="...")
+    finding_title = f"{vuln_name}: {title_suffix}"
 
     nodes = vulnerability.get("nodes", [])
     workloads = vulnerability.get("workloads", [])
@@ -206,7 +237,7 @@ def get_asset_item(vulnerability, test):
         affected_systems += f"  image: {image}\n"
 
     description = ASSET_FINDING_DESCRIPTION_TEMPLATE.format(
-        title=vulnerability_id,
+        name=vuln_name,
         description=vuln_description,
         feed_rating=vulnerability.get("feed_rating", "not provided"),
         published_date=published_date,
@@ -217,7 +248,7 @@ def get_asset_item(vulnerability, test):
 
     # create the finding object
     finding = Finding(
-        title=vulnerability_id,
+        title=finding_title,
         test=test,
         description=description,
         severity=severity,
@@ -228,7 +259,7 @@ def get_asset_item(vulnerability, test):
         publish_date=published_date,
     )
 
-    finding.unsaved_vulnerability_ids = [vulnerability_id]
+    finding.unsaved_vulnerability_ids = [vuln_name]
 
     finding.unsaved_endpoints = []
 
