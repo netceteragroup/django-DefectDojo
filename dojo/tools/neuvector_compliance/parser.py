@@ -161,6 +161,15 @@ def get_asset_item(comp_issue, test):
     test_profile = comp_issue.get("profile", "unknown profile")
 
     tags = comp_issue.get("tags", [])
+    description_tags = []
+    # for yet unclear reasons 'tags' can arrive as non-iterable
+    try:
+        iter(tags)
+    except TypeError:
+        description_tags = tags
+    else:
+        description_tags = ';'.join(tags)
+
     messages = comp_issue.get("message", [])
 
     nodes = comp_issue.get("nodes", [])
@@ -205,7 +214,7 @@ def get_asset_item(comp_issue, test):
         description=test_description,
         severity=test_severity,
         mitigation=mitigation,
-        tags=';'.join(tags),
+        tags=description_tags,
         message="\n".join(messages),
         affected_systems=affected_systems,
     )
