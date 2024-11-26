@@ -153,9 +153,7 @@ dbMigrationChecker:
     requests:
       cpu: 100m
       memory: 100Mi
-    limits:
-      cpu: 200m
-      memory: 200Mi
+    limits: {}
 
 tests:
   unitTests:
@@ -170,9 +168,7 @@ tests:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
+      limits: {}
 
 admin:
   user: admin
@@ -407,9 +403,7 @@ django:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 256Mi
+      limits: {}
   nodeSelector: {}
   # -- Configure pod disruption budgets for django ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget
   podDisruptionBudget:
@@ -470,9 +464,7 @@ django:
       requests:
         cpu: 100m
         memory: 256Mi
-      limits:
-        cpu: 2000m
-        memory: 512Mi
+      limits: {}
     appSettings:
       processes: 4
       threads: 4
