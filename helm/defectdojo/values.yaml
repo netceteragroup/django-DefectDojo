@@ -108,9 +108,7 @@ dbMigrationChecker:
     requests:
       cpu: 100m
       memory: 100Mi
-    limits:
-      cpu: 200m
-      memory: 200Mi
+    limits: {}
 
 tests:
   unitTests:
@@ -119,9 +117,7 @@ tests:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
+      limits: {}
 
 admin:
   user: admin
@@ -187,9 +183,7 @@ celery:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 256Mi
+      limits: {}
     # Enable startup probe for Celery beat container.
     startupProbe: {}
     tolerations: []
@@ -227,9 +221,7 @@ celery:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 512Mi
+      limits: {}
     # Enable startup probe for Celery worker container.
     startupProbe: {}
     tolerations: []
@@ -281,9 +273,7 @@ django:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 256Mi
+      limits: {}
   nodeSelector: {}
   replicas: 1
   strategy: {}
@@ -328,9 +318,7 @@ django:
       requests:
         cpu: 100m
         memory: 256Mi
-      limits:
-        cpu: 2000m
-        memory: 512Mi
+      limits: {}
     appSettings:
       processes: 4
       threads: 4
@@ -382,9 +370,7 @@ initializer:
     requests:
       cpu: 100m
       memory: 256Mi
-    limits:
-      cpu: 2000m
-      memory: 512Mi
+    limits: {}
   # Additional environment variables injected to the initializer job pods.
   extraEnv: []
   # Array of additional volume mount points for the initializer job (init)containers.
