@@ -53,6 +53,7 @@ class TrivyOperatorParser:
         return findings
 
     def handle_resource(self, data, test):
+        findings = []
         metadata = data.get("metadata", None)
         if metadata is None:
             return []
@@ -96,13 +97,13 @@ class TrivyOperatorParser:
 
             vulnerabilities = report.get("vulnerabilities", None)
             if vulnerabilities is not None:
-                findings += TrivyVulnerabilityHandler().handle_vulns(labels, endpoint, service, vulnerabilities, test)
+                findings += TrivyVulnerabilityHandler().handle_vulns(labels, endpoints, service, vulnerabilities, test)
             checks = report.get("checks", None)
             if checks is not None:
-                findings += TrivyChecksHandler().handle_checks(labels, endpoint, service, checks, test)
+                findings += TrivyChecksHandler().handle_checks(labels, endpoints, service, checks, test)
             secrets = report.get("secrets", None)
             if secrets is not None:
-                findings += TrivySecretsHandler().handle_secrets(labels, endpoint, service, secrets, test)
+                findings += TrivySecretsHandler().handle_secrets(labels, endpoints, service, secrets, test)
         status = data.get("status", None)
         if status is not None:
             benchmarkreport = status.get("detailReport", None)
