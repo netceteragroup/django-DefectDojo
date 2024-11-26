@@ -18,15 +18,8 @@ TRIVY_SEVERITIES = {
 
 
 class TrivyChecksHandler:
-    def handle_checks(self, labels, endpoint, service, checks, test):
+    def handle_checks(self, labels, endpoints, service, checks, test):
         findings = []
-        resource_namespace = labels.get("trivy-operator.resource.namespace", "")
-        resource_kind = labels.get("trivy-operator.resource.kind", "")
-        resource_name = labels.get("trivy-operator.resource.name", "")
-        container_name = labels.get("trivy-operator.container.name", "")
-        service = f"{resource_namespace}/{resource_kind}/{resource_name}"
-        if container_name != "":
-            service = f"{service}/{container_name}"
         for check in checks:
             check_title = check.get("title")
             check_severity = TRIVY_SEVERITIES[check.get("severity")]
@@ -69,8 +62,6 @@ class TrivyChecksHandler:
                 fix_available=True,
                 mitigation=mitigation,
             )
-            if resource_namespace != "":
-                finding.tags = resource_namespace
             if check_id:
                 finding.unsaved_vulnerability_ids = [UniformTrivyVulnID().return_uniformed_vulnid(check_id)]
             finding.unsaved_endpoints += endpoints
