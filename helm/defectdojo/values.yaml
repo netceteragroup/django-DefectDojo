@@ -97,9 +97,7 @@ dbMigrationChecker:
     requests:
       cpu: 100m
       memory: 100Mi
-    limits:
-      cpu: 200m
-      memory: 200Mi
+    limits: {}
 
 tests:
   unitTests:
@@ -107,9 +105,7 @@ tests:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
+      limits: {}
 
 admin:
   user: admin
@@ -151,9 +147,7 @@ celery:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 256Mi
+      limits: {}
     tolerations: []
   worker:
     annotations: {}
@@ -164,9 +158,7 @@ celery:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 512Mi
+      limits: {}
     tolerations: []
     appSettings:
       poolType: solo
@@ -238,9 +230,7 @@ django:
       requests:
         cpu: 100m
         memory: 128Mi
-      limits:
-        cpu: 2000m
-        memory: 256Mi
+      limits: {}
   nodeSelector: {}
   replicas: 1
   strategy: {}
@@ -274,9 +264,7 @@ django:
       requests:
         cpu: 100m
         memory: 256Mi
-      limits:
-        cpu: 2000m
-        memory: 512Mi
+      limits: {}
     appSettings:
       processes: 2
       threads: 2
@@ -357,9 +345,7 @@ initializer:
     requests:
       cpu: 100m
       memory: 256Mi
-    limits:
-      cpu: 2000m
-      memory: 512Mi
+    limits: {}
 
   # A list of extra volumes to mount. This
   # is useful for bringing in extra data that can be referenced by other configurations
