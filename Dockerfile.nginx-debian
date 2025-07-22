@@ -10,6 +10,7 @@ FROM base AS build
 WORKDIR /app
 RUN \
   apt-get -y update && \
+  apt-get -y upgrade && \
   apt-get -y install --no-install-recommends \
     gcc \
     build-essential \
