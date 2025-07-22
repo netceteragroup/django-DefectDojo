@@ -53,7 +53,8 @@ RUN \
     xmlsec1 \
     # required by gitpython module
     git \
-    # uuid-runtime \
+    # required for the first-time initializer
+    uuid-runtime \
     # libpq-dev \
     # only required for the dbshell (used by the initializer job)
     postgresql-client \
