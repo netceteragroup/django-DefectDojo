@@ -1809,55 +1809,28 @@ class Endpoint(models.Model):
         return NotImplemented
 
     def __str__(self):
-        try:
-            if self.host:
-                dummy_scheme = "dummy-scheme"  # workaround for https://github.com/python-hyper/hyperlink/blob/b8c9152cd826bbe8e6cc125648f3738235019705/src/hyperlink/_url.py#L988
-                url = hyperlink.EncodedURL(
-                    scheme=self.protocol or dummy_scheme,
-                    userinfo=self.userinfo or "",
-                    host=self.host,
-                    port=self.port,
-                    path=tuple(self.path.split("/")) if self.path else (),
-                    query=tuple(
-                        (
-                            qe.split("=", 1)
-                            if "=" in qe
-                            else (qe, None)
-                        )
-                        for qe in self.query.split("&")
-                    ) if self.query else (),  # inspired by https://github.com/python-hyper/hyperlink/blob/b8c9152cd826bbe8e6cc125648f3738235019705/src/hyperlink/_url.py#L1427
-                    fragment=self.fragment or "",
-                )
-                # Return a normalized version of the URL to avoid differences where there shouldn't be any difference.
-                # Example: https://google.com and https://google.com:443
-                normalize_path = self.path  # it used to add '/' at the end of host
-                clean_url = url.normalize(scheme=True, host=True, path=normalize_path, query=True, fragment=True, userinfo=True, percents=True).to_uri().to_text()
-                if not self.protocol:
-                    if clean_url[:len(dummy_scheme) + 3] == (dummy_scheme + "://"):
-                        clean_url = clean_url[len(dummy_scheme) + 3:]
-                    else:
-                        msg = "hyperlink lib did not create URL as was expected"
-                        raise ValueError(msg)
-                return clean_url
-            msg = "Missing host"
-            raise ValueError(msg)
-        except:
-            url = ""
-            if self.protocol:
-                url += f"{self.protocol}://"
-            if self.userinfo:
-                url += f"{self.userinfo}@"
-            if self.host:
-                url += self.host
-            if self.port:
-                url += f":{self.port}"
-            if self.path:
-                url += "{}{}".format("/" if self.path[0] != "/" else "", self.path)
-            if self.query:
-                url += f"?{self.query}"
-            if self.fragment:
-                url += f"#{self.fragment}"
-            return url
+        # if the endpoint is not a valid URL, do not try to guess the user's
+        # intent, just keep it as-is and return the combined fields. otherwize,
+        # endpoints might be considered the same (see comparison above),
+        # whereas they are not.
+
+        # TODO for upstream: treat Endpoint as a generic Endpoint, not as a URL
+        url = ""
+        if self.protocol:
+            url += f"{self.protocol}://"
+        if self.userinfo:
+            url += f"{self.userinfo}@"
+        if self.host:
+            url += self.host
+        if self.port:
+            url += f":{self.port}"
+        if self.path:
+            url += "{}{}".format("/" if self.path[0] != "/" else "", self.path)
+        if self.query:
+            url += f"?{self.query}"
+        if self.fragment:
+            url += f"#{self.fragment}"
+        return url
 
     def get_absolute_url(self):
         return reverse("view_endpoint", args=[str(self.id)])
