@@ -363,16 +363,15 @@ class DefaultReImporter(BaseImporter, DefaultReImporterOptions):
                     if force_continue:
                         continue
                     # Update endpoints on the existing finding with those on the new finding
-                    if finding.dynamic_finding:
-                        logger.debug(
-                            "Re-import found an existing dynamic finding for this new "
-                            "finding. Checking the status of endpoints",
-                        )
-                        self.endpoint_manager.update_endpoint_status(
-                            existing_finding,
-                            unsaved_finding,
-                            self.user,
-                        )
+                    logger.debug(
+                        "Re-import found an existing finding for this new finding. "
+                        "Checking the status of endpoints",
+                    )
+                    self.endpoint_manager.update_endpoint_status(
+                        existing_finding,
+                        unsaved_finding,
+                        self.user,
+                    )
                 else:
                     finding = self.process_finding_that_was_not_matched(unsaved_finding)
 
