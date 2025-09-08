@@ -47,8 +47,13 @@ jobs:
     strategy:
       matrix:
           docker-image: [django, nginx]
-          os: [debian]
+          os: [alpine, debian]
           platform: [amd64]
+          exclude:
+            - docker-image: nginx
+              os: debian
+            - docker-image: django
+              os: alpine
     steps:
       - name: set Docker tag to the release
         if: ${{ startsWith(github.ref_name, 'nca/release/') }}
@@ -143,7 +148,7 @@ jobs:
         with:
           push: true
           tags: ${{ env.REGISTRY }}${{ env.DD_IMAGE_REPO_PREFIX }}/defectdojo-${{ env.docker-image }}:${{ env.IMAGE_TAG }}
-          file: ./Dockerfile.${{ env.docker-image }}-debian
+          file: ./Dockerfile.${{ matrix.docker-image }}-${{ matrix.os }}
           context: .
           cache-from: type=local,src=/tmp/.buildx-cache-${{ env.docker-image }}
           cache-to: type=local,dest=/tmp/.buildx-cache-${{ env.docker-image }}
