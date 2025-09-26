@@ -44,7 +44,7 @@ class Inspector:
                 unsaved_vulnerability_ids.append(cve)
             unsaved_vulnerability_ids.extend(alias for alias in (vulnerability.get("RelatedVulnerabilities", []) or []) if alias != cve)
             # Add information about the vulnerable packages to the description and mitigation
-            vulnerable_packages = vulnerability.get("VulnerablePackages", [])
+            vulnerable_packages = (vulnerability.get("VulnerablePackages", []) or [])
             for package in vulnerable_packages:
                 mitigation += f"- Update {package.get('Name', '')}-{package.get('Version', '')}\n"
                 if remediation := package.get("Remediation"):
