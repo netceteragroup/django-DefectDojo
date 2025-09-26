@@ -70,7 +70,7 @@ class Inspector:
         locations = []
         for resource in finding.get("Resources", []):
             component_name = resource.get("Type")
-            host_value = f"{component_name}_{resource.get('Id')}".replace(":", "_").replace("/", "_")
+            host_value = f"{component_name}_{resource.get('Id')}".replace(":", "_").replace("/", "_").replace("$", "_")
             if settings.V3_FEATURE_LOCATIONS:
                 locations.append(LocationData.url(host=host_value))
             else:
