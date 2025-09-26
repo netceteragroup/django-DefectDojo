@@ -1322,6 +1322,7 @@ if env("DD_DJANGO_METRICS_ENABLED"):
 HASHCODE_FIELDS_PER_SCANNER = {
     # In checkmarx, same CWE may appear with different severities: example "sql injection" (high) and "blind sql injection" (low).
     # Including the severity in the hash_code keeps those findings not duplicate
+    "AWS Security Hub Scan": ["severity", "vulnerability_ids", "component_name", "unique_id_from_tool"],
     "Anchore Engine Scan": ["title", "severity", "component_name", "component_version", "file_path"],
     "AnchoreCTL Vuln Report": ["title", "severity", "component_name", "component_version", "file_path"],
     "AnchoreCTL Policies Report": ["title", "severity", "component_name", "file_path"],
