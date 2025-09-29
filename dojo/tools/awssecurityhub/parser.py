@@ -1,8 +1,12 @@
 import json
 
 from dojo.tools.awssecurityhub.compliance import Compliance
+from dojo.tools.awssecurityhub.config import Config
 from dojo.tools.awssecurityhub.guardduty import GuardDuty
+from dojo.tools.awssecurityhub.iam_access_analyzer import IamAccessAnalyzer
 from dojo.tools.awssecurityhub.inspector import Inspector
+from dojo.tools.awssecurityhub.health import Health
+from dojo.tools.awssecurityhub.securityhub import SecurityHub
 from dojo.tools.parser_test import ParserTest
 
 
@@ -57,8 +61,19 @@ class AwsSecurityHubParser:
                 item = Inspector().get_item(node, test)
             elif aws_scanner_type == "GuardDuty":
                 item = GuardDuty().get_item(node, test)
-            else:
+            elif aws_scanner_type == "Compliance":
                 item = Compliance().get_item(node, test)
+            elif aws_scanner_type == "IAM Access Analyzer":
+                item = IamAccessAnalyzer().get_item(node, test)
+            elif aws_scanner_type == "Health":
+                item = Health().get_item(node, test)
+            elif aws_scanner_type == "Config":
+                item = Config().get_item(node, test)
+            elif aws_scanner_type == "Security Hub":
+                item = SecurityHub().get_item(node, test)
+            else:
+                msg = "Unsupported Security Hub report format"
+                raise TypeError(msg)
             key = node["Id"]
             if not isinstance(key, str):
                 msg = "Incorrect Security Hub report format"
