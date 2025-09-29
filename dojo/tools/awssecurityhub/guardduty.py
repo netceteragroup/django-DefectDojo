@@ -83,7 +83,12 @@ class GuardDuty:
                 resource_id = resource["Id"].split(":")[-1]
                 impact.append(f"Resource: {resource_id}")
                 title_suffix = f" - Resource: {resource_id}"
-        if remediation_rec_url := finding.get("Remediation", {}).get("Recommendation", {}).get("Url"):
+
+        remediation_rec_url = ""
+        if remediation := finding.get("Remediation", {}):
+            if recommendation := remediation.get("Recommendation", {}):
+                remediation_rec_url = recommendation.get("Url") or ""
+        if len(remediation_rec_url) > 0:
             references.append(remediation_rec_url)
         false_p = False
         result = Finding(
