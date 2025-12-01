@@ -1818,6 +1818,11 @@ LOGGING = {
             "level": str(LOG_LEVEL),
             "propagate": False,
         },
+        "django.db.backends": {
+            "handlers": [rf"{LOGGING_HANDLER}"],
+            "level": str(LOG_LEVEL),
+            "propagate": False,
+        },
     },
 }
 
