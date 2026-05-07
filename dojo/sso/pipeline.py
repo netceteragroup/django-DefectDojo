@@ -7,6 +7,7 @@ import social_core.pipeline.user
 from django.conf import settings
 from social_core.backends.azuread_tenant import AzureADTenantOAuth2
 from social_core.backends.google import GoogleOAuth2
+from social_core.backends.open_id_connect import OpenIdConnectAuth
 
 from dojo.authorization.roles_permissions import Permissions, Roles
 from dojo.models import Dojo_Group, Dojo_Group_Member, Product, Product_Member, Product_Type, Role
@@ -186,3 +187,21 @@ def create_user(strategy, details, backend, user=None, *args, **kwargs):
     username = details.get(settings.SOCIAL_AUTH_CREATE_USER_MAPPING)
     details["username"] = sanitize_username(username)
     return social_core.pipeline.user.create_user(strategy, details, backend, user, args, kwargs)
+
+def update_keycloak_groups(backend, uid, user=None, social=None, *args, **kwargs):
+    if settings.KEYCLOAK_OAUTH2_ENABLED and settings.SOCIAL_AUTH_KEYCLOAK_OAUTH2_GET_GROUPS and isinstance(backend, OpenIdConnectAuth):
+        group_names = []
+        if "groups" not in kwargs["response"] or kwargs["response"]["groups"] == "":
+            logger.warning("No groups in response. Stopping to update groups of user based on Keycloak")
+            return
+        group_ids = kwargs["response"]["groups"]
+        for group_from_response in group_ids:
+            if settings.SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER == "" or re.search(settings.SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER, group_from_response):
+                group_names.append(group_from_response)
+            else:
+                logger.debug("Skipping group " + group_from_response + " due to SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER " + settings.SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER)
+
+        if len(group_names) > 0:
+            assign_user_to_groups(user, group_names, "Keycloak")
+        if settings.SOCIAL_AUTH_KEYCLOAK_OAUTH2_CLEANUP_GROUPS:
+            cleanup_old_groups_for_user(user, group_names)

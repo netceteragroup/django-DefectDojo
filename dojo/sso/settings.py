@@ -57,6 +57,9 @@ SSO_ENV_SCHEMA = {
     "DD_SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL": (str, ""),
     "DD_SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL": (str, ""),
     "DD_SOCIAL_AUTH_KEYCLOAK_LOGIN_BUTTON_TEXT": (str, "Login with Keycloak"),
+    "DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_GET_GROUPS": (bool, False),
+    "DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_CLEANUP_GROUPS": (bool, True),
+    "DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER": (str, ""),
     "DD_SOCIAL_AUTH_GITHUB_ENTERPRISE_OAUTH2_ENABLED": (bool, False),
     "DD_SOCIAL_AUTH_GITHUB_ENTERPRISE_URL": (str, ""),
     "DD_SOCIAL_AUTH_GITHUB_ENTERPRISE_API_URL": (str, ""),
@@ -122,7 +125,8 @@ def apply_sso_settings(env, globs):
         "social_core.backends.okta.OktaOAuth2",
         "social_core.backends.azuread_tenant.AzureADTenantOAuth2",
         "social_core.backends.gitlab.GitLabOAuth2",
-        "social_core.backends.keycloak.KeycloakOAuth2",
+        # "social_core.backends.keycloak.KeycloakOAuth2",
+        "social_core.backends.open_id_connect.OpenIdConnectAuth",
         "social_core.backends.github_enterprise.GithubEnterpriseOAuth2",
         "dojo.sso.remote_user.RemoteUserBackend",
         "django.contrib.auth.backends.RemoteUserBackend",
@@ -146,6 +150,7 @@ def apply_sso_settings(env, globs):
         "social_core.pipeline.user.user_details",
         "dojo.sso.pipeline.update_azure_groups",
         "dojo.sso.pipeline.update_product_access",
+        "dojo.sso.pipeline.update_keycloak_groups",
     )
 
     # --------------------------------------------------------------------------
@@ -269,6 +274,12 @@ def apply_sso_settings(env, globs):
     globs["SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL"] = env("DD_SOCIAL_AUTH_KEYCLOAK_AUTHORIZATION_URL")
     globs["SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL"] = env("DD_SOCIAL_AUTH_KEYCLOAK_ACCESS_TOKEN_URL")
     globs["SOCIAL_AUTH_KEYCLOAK_LOGIN_BUTTON_TEXT"] = env("DD_SOCIAL_AUTH_KEYCLOAK_LOGIN_BUTTON_TEXT")
+
+    globs["SOCIAL_AUTH_OIDC_KEY"] = env("DD_SOCIAL_AUTH_KEYCLOAK_KEY")
+    globs["SOCIAL_AUTH_OIDC_SECRET"] = env("DD_SOCIAL_AUTH_KEYCLOAK_SECRET")
+    globs["SOCIAL_AUTH_KEYCLOAK_OAUTH2_GET_GROUPS"] = env("DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_GET_GROUPS")
+    globs["SOCIAL_AUTH_KEYCLOAK_OAUTH2_CLEANUP_GROUPS"] = env("DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_CLEANUP_GROUPS")
+    globs["SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER"] = env("DD_SOCIAL_AUTH_KEYCLOAK_OAUTH2_GROUPS_FILTER")
 
     # --------------------------------------------------------------------------
     # GITHUB ENTERPRISE OAUTH2
