@@ -66,7 +66,10 @@ class TrivyChecksHandler:
                 references=check_references,
                 description=description,
                 static_finding=True,
-                dynamic_finding=False,
+                # Findings carry endpoints (affected Kubernetes resources), so they must stay
+                # dynamic: the reimporter only mitigates/reactivates endpoints of findings
+                # flagged as dynamic_finding.
+                dynamic_finding=True,
                 service=service,
                 fix_available=True,
             )

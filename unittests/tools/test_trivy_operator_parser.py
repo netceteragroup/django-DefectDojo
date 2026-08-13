@@ -27,6 +27,9 @@ class TestTrivyOperatorParser(DojoTestCase):
             self.assertEqual(1, len(finding.unsaved_vulnerability_ids))
             self.assertEqual("AVD-KSV-0014", finding.unsaved_vulnerability_ids[0])
             self.assertEqual("KSV014 - Root file system is not read-only", finding.title)
+            self.assertTrue(finding.static_finding)
+            self.assertTrue(finding.dynamic_finding)
+            self.assertGreater(len(finding.unsaved_endpoints), 0)
 
     def test_configauditreport_many_vulns(self):
         with sample_path("configauditreport_many.json").open(encoding="utf-8") as test_file:
@@ -63,6 +66,9 @@ class TestTrivyOperatorParser(DojoTestCase):
             self.assertEqual("7.87.0-r2", finding.mitigation)
             self.assertEqual(4.2, finding.cvssv3_score)
             self.assertEqual(True, finding.fix_available)
+            self.assertTrue(finding.static_finding)
+            self.assertTrue(finding.dynamic_finding)
+            self.assertGreater(len(finding.unsaved_endpoints), 0)
 
     def test_vulnerabilityreport_many(self):
         with sample_path("vulnerabilityreport_many.json").open(encoding="utf-8") as test_file:
@@ -100,6 +106,9 @@ class TestTrivyOperatorParser(DojoTestCase):
             self.assertEqual("aws-secret-access-key", finding.references)
             self.assertEqual("root/aws_secret.txt", finding.file_path)
             self.assertEqual("Secret detected in root/aws_secret.txt - AWS Secret Access Key", finding.title)
+            self.assertTrue(finding.static_finding)
+            self.assertTrue(finding.dynamic_finding)
+            self.assertGreater(len(finding.unsaved_endpoints), 0)
 
     def test_exposedsecretreport_many(self):
         with sample_path("exposedsecretreport_many.json").open(encoding="utf-8") as test_file:
